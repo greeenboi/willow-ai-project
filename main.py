@@ -20,6 +20,8 @@ from dotenv import load_dotenv
 import uvicorn
 import asyncio
 
+from database import DatabaseManager
+
 # Load environment variables
 load_dotenv()
 
@@ -69,6 +71,10 @@ TRANSCRIPTS_DIR.mkdir(exist_ok=True)
 LOGS_DIR = Path("logs")
 LOGS_DIR.mkdir(exist_ok=True)
 
+# Initialize database manager
+db_manager = DatabaseManager()
+logger.info("Database manager initialized")
+
 # Define message models for chat completion
 class MessageRole(BaseModel):
     role: Literal["system", "user", "assistant"]
@@ -93,7 +99,8 @@ class AgentResponse(BaseModel):
 
 # Voice agent context
 class ConversationState:
-    def __init__(self):
+    def __init__(self, session_id: str):
+        self.session_id = session_id
         self.lead_info = {
             "company_name": None,
             "domain": None,
@@ -103,16 +110,25 @@ class ConversationState:
         self.conversation_history = []
         self.current_stage = "greeting"
         self.media_to_display = None
+        
+        # Create session in database
+        db_manager.create_session(session_id, self.lead_info)
 
     def update_lead_info(self, key, value):
         if key in self.lead_info:
             self.lead_info[key] = value
+            # Update database
+            db_manager.update_session(self.session_id, self.lead_info, self.current_stage)
             return True
         return False
 
     def add_to_history(self, speaker, message):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.conversation_history.append({"timestamp": timestamp, "speaker": speaker, "message": message})
+        history_entry = {"timestamp": timestamp, "speaker": speaker, "message": message}
+        self.conversation_history.append(history_entry)
+        
+        # Add to database
+        db_manager.add_message(self.session_id, speaker, message)
 
     def get_summary(self):
         filled_info = {k: v for k, v in self.lead_info.items() if v}
@@ -133,6 +149,28 @@ class ConversationState:
                 "summary": self.get_summary()
             }, f, indent=2)
         return filename
+    
+    def load_from_database(self):
+        """Load existing session data from database."""
+        session_data = db_manager.get_session(self.session_id)
+        if session_data:
+            self.lead_info = session_data.get("lead_info", self.lead_info)
+            self.current_stage = session_data.get("current_stage", "greeting")
+            
+            # Load chat history
+            chat_history = db_manager.get_chat_history(self.session_id)
+            self.conversation_history = [
+                {
+                    "timestamp": msg["timestamp"],
+                    "speaker": msg["speaker"], 
+                    "message": msg["message"]
+                }
+                for msg in chat_history
+            ]
+            
+            logger.info(f"Loaded session {self.session_id} from database with {len(self.conversation_history)} messages")
+            return True
+        return False
 
 
 # Active connections and their states
@@ -256,9 +294,7 @@ async def get_ai_response(conversation_state, user_input):
                 # Extract JSON command
                 start_idx = response_text.find('{"show_media":')
                 end_idx = response_text.find('}', start_idx) + 1
-                media_command = json.loads(response_text[start_idx:end_idx])
-
-                # Set media to display
+                media_command = json.loads(response_text[start_idx:end_idx])                # Set media to display
                 conversation_state.media_to_display = {
                     "type": media_command.get("show_media", "demo"),
                     "topic": media_command.get("topic", "general")
@@ -380,15 +416,17 @@ async def process_text_message(request: TextMessageRequest):
         
         # Initialize conversation state if not exists
         if session_id not in active_connections:
-            active_connections[session_id] = ConversationState()
+            active_connections[session_id] = ConversationState(session_id)
+            # Try to load existing session data
+            active_connections[session_id].load_from_database()
         
         conv_state = active_connections[session_id]
         conv_state.add_to_history("user", user_message)
-          # Get AI response
+        
+        # Get AI response
         ai_response = await get_ai_response(conv_state, user_message)
         conv_state.add_to_history("agent", ai_response)
-        
-        # Convert to speech
+          # Convert to speech
         speech_audio = await asyncio.get_event_loop().run_in_executor(
             None, text_to_speech, ai_response
         )
@@ -404,6 +442,12 @@ async def process_text_message(request: TextMessageRequest):
         # Add media if any was triggered
         if conv_state.media_to_display:
             response_data["media"] = conv_state.media_to_display
+            # Log media interaction to database
+            db_manager.log_media_interaction(
+                session_id, 
+                conv_state.media_to_display["type"], 
+                conv_state.media_to_display["topic"]
+            )
             conv_state.media_to_display = None
         
         logger.info(f"Sent text response to {session_id}")
@@ -424,7 +468,9 @@ async def process_audio_message(session_id: str = Form(...), audio_file: UploadF
         
         # Initialize conversation state if not exists
         if session_id not in active_connections:
-            active_connections[session_id] = ConversationState()
+            active_connections[session_id] = ConversationState(session_id)
+            # Try to load existing session data
+            active_connections[session_id].load_from_database()
         
         conv_state = active_connections[session_id]
         
@@ -449,8 +495,7 @@ async def process_audio_message(session_id: str = Form(...), audio_file: UploadF
             speech_audio = await asyncio.get_event_loop().run_in_executor(
                 None, text_to_speech, ai_response
             )
-            
-            # Prepare response
+              # Prepare response
             response_data = {
                 "type": "agent_response",
                 "text": ai_response,
@@ -462,6 +507,12 @@ async def process_audio_message(session_id: str = Form(...), audio_file: UploadF
             # Add media if any was triggered
             if conv_state.media_to_display:
                 response_data["media"] = conv_state.media_to_display
+                # Log media interaction to database
+                db_manager.log_media_interaction(
+                    session_id, 
+                    conv_state.media_to_display["type"], 
+                    conv_state.media_to_display["topic"]
+                )
                 conv_state.media_to_display = None
             
             logger.info(f"Sent audio response to {session_id}")
@@ -488,14 +539,17 @@ async def start_session(session_id: str):
         
         # Initialize conversation state
         if session_id not in active_connections:
-            active_connections[session_id] = ConversationState()
+            active_connections[session_id] = ConversationState(session_id)
+            # Try to load existing session data
+            active_connections[session_id].load_from_database()
         
         conv_state = active_connections[session_id]
         
         # Send initial greeting
         initial_greeting = "Hi there! I'm Jane, an AI Sales Development Representative. I'd like to learn more about your company and how we might be able to help you. Could you tell me the name of your company?"
         conv_state.add_to_history("agent", initial_greeting)
-          # Generate greeting audio
+        
+        # Generate greeting audio
         greeting_audio = await asyncio.get_event_loop().run_in_executor(
             None, text_to_speech, initial_greeting
         )
@@ -531,6 +585,72 @@ async def health_check():
 async def test_endpoint():
     return {"message": "Backend is working!", "timestamp": datetime.now().isoformat()}
 
+@app.get("/api/sessions")
+async def get_all_sessions():
+    """Get all sessions with basic information"""
+    try:
+        sessions = db_manager.get_all_sessions()
+        return JSONResponse(content={"sessions": sessions})
+    except Exception as e:
+        logger.error(f"Error retrieving sessions: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve sessions"}
+        )
+
+@app.get("/api/session/{session_id}/summary")
+async def get_session_summary(session_id: str):
+    """Get comprehensive summary of a session"""
+    try:
+        summary = db_manager.get_session_summary(session_id)
+        if summary:
+            return JSONResponse(content=summary)
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Session not found"}
+            )
+    except Exception as e:
+        logger.error(f"Error retrieving session summary for {session_id}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve session summary"}
+        )
+
+@app.post("/api/session/{session_id}/close")
+async def close_session(session_id: str):
+    """Close a session"""
+    try:
+        success = db_manager.close_session(session_id)
+        if success:
+            # Remove from active connections if present
+            if session_id in active_connections:
+                del active_connections[session_id]
+            return JSONResponse(content={"message": "Session closed successfully"})
+        else:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Session not found"}
+            )
+    except Exception as e:
+        logger.error(f"Error closing session {session_id}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to close session"}
+        )
+
+@app.get("/api/session/{session_id}/history")
+async def get_session_history(session_id: str, limit: int = 50):
+    """Get chat history for a session"""
+    try:
+        history = db_manager.get_chat_history(session_id, limit)
+        return JSONResponse(content={"history": history})
+    except Exception as e:
+        logger.error(f"Error retrieving history for {session_id}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve session history"}
+        )
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
