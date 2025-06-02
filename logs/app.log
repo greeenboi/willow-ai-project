@@ -70,3 +70,88 @@ You can install "python-multipart" with:
 
 pip install python-multipart
 
+2025-06-03 01:33:34,759 - database - INFO - Turso database initialized successfully
+2025-06-03 01:33:34,760 - main - INFO - Database manager initialized
+2025-06-03 01:33:42,131 - main - INFO - Starting new session: yrec610wkk
+2025-06-03 01:33:44,912 - database - INFO - Created session: yrec610wkk
+2025-06-03 01:33:44,917 - main - INFO - Loaded session yrec610wkk from database with 0 messages
+2025-06-03 01:33:47,484 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:33:50,742 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 01:33:50,745 - main - INFO - Session started for yrec610wkk
+2025-06-03 01:33:50,778 - main - INFO - Starting new session: yrec610wkk
+2025-06-03 01:33:53,815 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:33:55,851 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 01:33:55,852 - main - INFO - Session started for yrec610wkk
+2025-06-03 01:35:03,461 - main - INFO - Processing text message from yrec610wkk: Sure I can! I currently work at langflow, an ai startup that is building a low-code ai builder platform
+2025-06-03 01:35:06,681 - main - INFO - Getting AI response for input: Sure I can! I currently work at langflow, an ai st...
+2025-06-03 01:35:09,361 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:35:09,377 - main - INFO - AI response generated: That sounds fascinating! I'm excited to learn more about Langflow and how our solutions might align ...
+2025-06-03 01:35:12,044 - main - INFO - Starting TTS for text: That sounds fascinating! I'm excited to learn more...
+2025-06-03 01:35:13,995 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-03 01:35:13,996 - main - INFO - Sent text response to yrec610wkk
+2025-06-03 01:36:39,280 - main - INFO - Processing text message from yrec610wkk: Well Currently we are trying to build an agent that uses mcp to help users understand and build agents on our platform with but a textprompt and a click
+2025-06-03 01:36:41,717 - main - INFO - Getting AI response for input: Well Currently we are trying to build an agent tha...
+2025-06-03 01:36:42,473 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:36:42,476 - main - INFO - AI response generated: So you're working on creating a more intuitive and user-friendly experience on your platform. That's...
+2025-06-03 01:36:44,906 - main - INFO - Starting TTS for text: So you're working on creating a more intuitive and...
+2025-06-03 01:36:47,490 - main - INFO - TTS successful, generated 3276908 characters of base64 audio
+2025-06-03 01:36:47,492 - main - INFO - Sent text response to yrec610wkk
+2025-06-03 01:38:42,838 - main - INFO - Processing text message from yrec610wkk: Well yes the main pain points are working with end to end data sanitization considering the unstability of MCP servers and llms in general. and also since we have moved the product into alpha we need to come up with a better method for hosting and deploying our current mcp and agent servers due to the traffic we are facing. Our current budget is around $100k
+2025-06-03 01:38:47,189 - main - INFO - Getting AI response for input: Well yes the main pain points are working with end...
+2025-06-03 01:38:49,175 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:38:49,178 - main - INFO - AI response generated: It sounds like you're facing some significant infrastructure and scalability challenges. Ensuring da...
+2025-06-03 01:38:49,179 - main - INFO - Media command extracted: {'show_media': 'demo', 'topic': 'scalable_deployment'}
+2025-06-03 01:38:51,268 - database - INFO - Updated session: yrec610wkk
+2025-06-03 01:38:53,904 - main - INFO - Starting TTS for text: It sounds like you're facing some significant infr...
+2025-06-03 01:38:57,821 - main - INFO - TTS successful, generated 5529708 characters of base64 audio
+2025-06-03 01:38:59,981 - database - INFO - Logged media interaction: demo/scalable_deployment for session yrec610wkk
+2025-06-03 01:38:59,982 - main - INFO - Sent text response to yrec610wkk
+2025-06-03 01:39:47,949 - main - INFO - Processing text message from yrec610wkk: Yes I would like to see your demo
+2025-06-03 01:39:50,541 - main - INFO - Getting AI response for input: Yes I would like to see your demo...
+2025-06-03 01:39:51,596 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:39:51,599 - main - INFO - AI response generated: I'd be happy to set up a demo that's tailored to your specific needs and pain points. 
+
+Before I do ...
+2025-06-03 01:39:54,225 - main - INFO - Starting TTS for text: I'd be happy to set up a demo that's tailored to y...
+2025-06-03 01:39:58,222 - main - INFO - TTS successful, generated 6310508 characters of base64 audio
+2025-06-03 01:39:58,223 - main - INFO - Sent text response to yrec610wkk
+2025-06-03 01:40:55,305 - main - INFO - Processing text message from yrec610wkk: Talk to me about your deployment solutions
+2025-06-03 01:40:57,655 - main - INFO - Getting AI response for input: Talk to me about your deployment solutions...
+2025-06-03 01:40:58,797 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:40:58,800 - main - INFO - AI response generated: Our deployment solutions are designed to help companies like Langflow overcome scalability challenge...
+2025-06-03 01:40:58,800 - main - INFO - Media command extracted: {'show_media': 'demo', 'topic': 'deployment_solutions'}
+2025-06-03 01:41:01,850 - main - INFO - Starting TTS for text: Our deployment solutions are designed to help comp...
+2025-06-03 01:41:05,978 - main - INFO - TTS successful, generated 6118508 characters of base64 audio
+2025-06-03 01:41:07,849 - database - INFO - Logged media interaction: demo/deployment_solutions for session yrec610wkk
+2025-06-03 01:41:07,850 - main - INFO - Sent text response to yrec610wkk
+2025-06-03 01:42:13,925 - main - INFO - Starting new session: 4k35pbunegs
+2025-06-03 01:42:16,027 - database - INFO - Created session: 4k35pbunegs
+2025-06-03 01:42:16,030 - main - INFO - Loaded session 4k35pbunegs from database with 0 messages
+2025-06-03 01:42:18,479 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:42:19,844 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 01:42:19,845 - main - INFO - Session started for 4k35pbunegs
+2025-06-03 01:42:19,867 - main - INFO - Starting new session: 4k35pbunegs
+2025-06-03 01:42:22,452 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:42:22,641 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3452, Requested 183. Please try again in 13m56.073s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-03 01:42:22,643 - main - INFO - Session started for 4k35pbunegs
+2025-06-03 01:50:34,518 - main - INFO - Starting new session: gb89blzsne9
+2025-06-03 01:50:37,612 - database - INFO - Created session: gb89blzsne9
+2025-06-03 01:50:37,616 - main - INFO - Loaded session gb89blzsne9 from database with 0 messages
+2025-06-03 01:50:40,244 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:50:41,494 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3432, Requested 183. Please try again in 5m37.234s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-03 01:50:41,495 - main - INFO - Session started for gb89blzsne9
+2025-06-03 01:50:41,500 - main - INFO - Starting new session: gb89blzsne9
+2025-06-03 01:50:43,641 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 01:50:43,845 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3431, Requested 183. Please try again in 5m34.886999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-03 01:50:43,847 - main - INFO - Session started for gb89blzsne9
+2025-06-03 01:54:48,412 - main - INFO - Processing text message from gb89blzsne9: Sure I can! I currently work at langflow, an ai startup that is building a low-code ai builder platform
+2025-06-03 01:54:51,235 - main - INFO - Getting AI response for input: Sure I can! I currently work at langflow, an ai st...
+2025-06-03 01:54:51,905 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 01:54:51,914 - main - INFO - AI response generated: That's really cool! I'm excited to learn more about what you're working on at Langflow. A low-code A...
+2025-06-03 01:54:54,597 - main - INFO - Starting TTS for text: That's really cool! I'm excited to learn more abou...
+2025-06-03 01:54:54,788 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3421, Requested 255. Please try again in 30m11.944999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-03 01:54:54,789 - main - INFO - Sent text response to gb89blzsne9
