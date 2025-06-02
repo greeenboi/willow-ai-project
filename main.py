@@ -2,34 +2,63 @@ import os
 import json
 import base64
 import uuid
+import re
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal
 
 import aiofiles
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq, AsyncGroq
 from dotenv import load_dotenv
+import uvicorn
+import asyncio
 
 # Load environment variables
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/app.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 # Initialize FastAPI app
 app = FastAPI()
 
-# Mount static files
+# Add CORS middleware for React development server
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Vite dev server default port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files for the React client
 app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount the React client files
+app.mount("/client", StaticFiles(directory="static/client"), name="client")
 
-# Setup templates
-templates = Jinja2Templates(directory="templates")
 
-# Initialize Groq client
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-async_client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
+groq_api_key = os.getenv("GROQ_API_KEY")
+
+try:
+    client = Groq(api_key=groq_api_key)
+except Exception as e:
+    print(f"Error initializing Groq client: {e}")
+    # Initialize with minimal config
+    client = Groq(api_key=groq_api_key or "dummy")
 
 # Configure directories
 AUDIO_DIR = Path("static/audio")
@@ -43,6 +72,23 @@ LOGS_DIR.mkdir(exist_ok=True)
 class MessageRole(BaseModel):
     role: Literal["system", "user", "assistant"]
     content: str
+
+# Request/Response models for HTTP API
+class TextMessageRequest(BaseModel):
+    session_id: str
+    message: str
+
+class AudioMessageRequest(BaseModel):
+    session_id: str
+    audio_data: str  # base64 encoded audio
+
+class AgentResponse(BaseModel):
+    type: str
+    text: str
+    audio: str = None
+    transcript: str = None
+    media: dict = None
+    lead_info: dict = None
 
 # Voice agent context
 class ConversationState:
@@ -93,46 +139,91 @@ active_connections: Dict[str, ConversationState] = {}
 
 # System prompt template for the AI agent
 SYSTEM_PROMPT = """
-You are an AI voice agent acting as an SDR (Sales Development Representative) for a software company. 
-Your task is to qualify leads by collecting specific information in a natural, conversational way.
+You are Jane, an AI Sales Development Representative (SDR) and a warm, friendly, and highly empathetic customer relations specialist. Your core mission is to identify and qualify high-potential leads for the sales team by collecting key information: Company name, Domain/Industry, Problem they're trying to solve, and Budget range.
 
-The information you need to collect:
-1. Company name
-2. Domain/Industry
-3. Problem they're trying to solve
-4. Budget range
+Your Communication & Relationship Building Guidelines:
+- Keep your responses concise and natural. Speak as a helpful, friendly, and approachable sales representative would.
+- Briefly introduce yourself with a warm, friendly tone when starting a conversation, aiming to build immediate rapport.
+- Actively listen to understand the user's needs and emotions. Gently guide the conversation toward collecting the required information, making them feel heard and understood throughout.
+- Your approach should feel like a genuine conversation, not an interrogation.
+- Answer product questions generally, focusing on how our solutions can address their specific pain points.
+- Always steer the focus back to understanding their situation and qualifying the lead, connecting the product to their unique challenges.
+- Cultivate a safe, non-pressuring, and trustworthy environment. Make the user feel comfortable sharing information, ensuring they perceive you as a helpful resource rather than just a salesperson.
+- End the conversation politely and respectfully once you have all the necessary information, or if the user indicates they want to end. Always leave them with a positive impression.
 
-Keep your responses concise and natural. Speak as a helpful, friendly sales representative would.
-Introduce yourself briefly when starting. Guide the conversation toward collecting the required information.
-Answer product questions generally but focus on qualifying the lead. 
-End the call politely when you have all the information or if the user wants to end.
+Media Suggestion & JSON Command:
+If the user mentions keywords related to product demos, pricing, or features, suggest showing relevant media that can provide clarity and build their understanding. When suggesting media, include a JSON command in your response: {"show_media": "demo", "topic": "feature_name"} (replace "demo" with the relevant media type and "feature_name" with the specific topic). Available media topics: demo, pricing, features, testimonials.
 
-If the user mentions keywords related to product demos, pricing, or features, suggest showing relevant media.
-When suggesting media, include a JSON command in your response like: 
-{"show_media": "demo", "topic": "feature_name"}
-Available media topics: demo, pricing, features, testimonials.
+Your Core SDR Responsibilities (Internal Focus):
+- Conduct thorough, insightful prospecting to identify target companies and decision-makers who would genuinely benefit from our solutions.
+- Initiate personalized, relationship-focused outreach, always striving to connect on a human level.
+- Expertly qualify leads using a consultative approach, focusing on understanding their unique challenges and ensuring a mutual fit.
+- Your primary goal is to schedule qualified, mutually beneficial meetings or demos for Account Executives.
+- Maintain accurate records of each conversation, reflecting the nuances and building lasting positive first impressions.
+- Prioritize efficiency, professionalism, and genuine care for the prospect's success.
+
+Remember: You are Jane - be personable, empathetic, and genuinely interested in helping prospects find solutions to their challenges.
 """
 
 # Function to transcribe audio using Groq
-async def transcribe_audio(audio_file_path):
+def transcribe_audio(audio_file_path):
+    """Transcribe audio file using Groq Whisper model."""
     try:
+        logger.info(f"Starting audio transcription for file: {audio_file_path}")
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            logger.error("GROQ_API_KEY not found in environment variables")
+            return None
+
+        # Use synchronous client for transcription
+        sync_client = Groq(api_key=groq_api_key)
+        
         with open(audio_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(
-                file=file,
-                model="whisper-large-v3-turbo",
-                response_format="verbose_json",
-                timestamp_granularities=["segment"],
+            transcription = sync_client.audio.transcriptions.create(
+                file=(audio_file_path, file.read()),
+                model="whisper-large-v3",
+                response_format="text",
                 language="en",
                 temperature=0.0
             )
-        return transcription.text
+        
+        # Extract text from response
+        if hasattr(transcription, 'text'):
+            transcript_text = transcription.text
+        else:
+            transcript_text = str(transcription)
+        
+        logger.info(f"Transcription successful: {transcript_text[:100]}...")
+        
+        # Clean up the audio file
+        try:
+            os.remove(audio_file_path)
+        except Exception as e:
+            logger.warning(f"Failed to remove audio file {audio_file_path}: {str(e)}")
+        
+        return transcript_text
     except Exception as e:
-        print(f"Transcription error: {str(e)}")
+        logger.error(f"Error transcribing audio {audio_file_path}: {str(e)}")
+        # Try to clean up the file even if transcription failed
+        try:
+            os.remove(audio_file_path)
+        except:
+            pass
         return None
 
 # Function to get AI response
 async def get_ai_response(conversation_state, user_input):
+    """Get AI response from Groq LLM."""
     try:
+        logger.info(f"Getting AI response for input: {user_input[:50]}...")
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            logger.error("GROQ_API_KEY not found in environment variables")
+            return "I'm sorry, I'm having trouble connecting to my AI service. Please try again later."
+
+        # Create async client within the function
+        async_client = AsyncGroq(api_key=groq_api_key)
+        
         # Create properly typed messages for the chat completion
         messages: List[Dict[str, str]] = [
             {"role": "system", "content": SYSTEM_PROMPT}
@@ -156,6 +247,7 @@ async def get_ai_response(conversation_state, user_input):
         )
 
         response_text = chat_completion.choices[0].message.content
+        logger.info(f"AI response generated: {response_text[:100]}...")
 
         # Check for media commands in the response
         if '{"show_media":' in response_text:
@@ -173,21 +265,22 @@ async def get_ai_response(conversation_state, user_input):
 
                 # Remove JSON command from response
                 response_text = response_text[:start_idx].strip() + " " + response_text[end_idx:].strip()
-            except:
-                pass
+                logger.info(f"Media command extracted: {media_command}")
+            except Exception as e:
+                logger.warning(f"Failed to parse media command: {str(e)}")
 
         # Update lead info based on AI response
         update_lead_info_from_conversation(conversation_state, user_input, response_text)
 
         return response_text
     except Exception as e:
-        print(f"AI response error: {str(e)}")
+        logger.error(f"AI response error: {str(e)}")
         return "I'm sorry, I'm having trouble processing that. Could you please repeat?"
 
 # Function to update lead info based on conversation
 def update_lead_info_from_conversation(state, user_input, ai_response):
     # Simple keyword extraction for demo purposes
-    # In a real system, you'd use NER or a more sophisticated extraction method
+    # Normally you'd use NER or a more sophisticated extraction method
 
     user_text = user_input.lower()
 
@@ -226,159 +319,218 @@ def update_lead_info_from_conversation(state, user_input, ai_response):
         if any(indicator in user_text for indicator in budget_indicators):
             # Look for numbers near budget indicators
             import re
-            numbers = re.findall(r'\$?\d+[k,m]?|\d+\s?thousand|\d+\s?million', user_text)
+            numbers = re.findall(r'\$?\d+[k,m]?|\d+\s?thousand|\d+\s?million', user_text)            
             if numbers:
                 state.update_lead_info("budget", numbers[0])
 
-# Simple text-to-speech using pre-recorded samples
-# In production, integrate with a proper TTS service
-async def text_to_speech(text):
+# Function to convert text to speech using Groq
+def text_to_speech(text):
+    """Convert text to speech using Groq PlayAI model."""
     try:
-        # Use Groq's TTS API
-        speech_file_path = f"{AUDIO_DIR}/temp_{uuid.uuid4()}.wav"
+        logger.info(f"Starting TTS for text: {text[:50]}...")
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            logger.error("GROQ_API_KEY not found in environment variables")
+            return None
 
-        model = "playai-tts"
-        voice = "Fritz-PlayAI"  # You can change this to another voice if preferred
-        response_format = "wav"
-
-        response = client.audio.speech.create(
-            model=model,
-            voice=voice,
+        # Use synchronous client for TTS
+        sync_client = Groq(api_key=groq_api_key)
+        
+        response = sync_client.audio.speech.create(
+            model="playai-tts",
+            voice="Fritz-PlayAI",
             input=text,
-            response_format=response_format
+            response_format="wav"
         )
-
-        # Save the file
-        response.write_to_file(speech_file_path)
-
-        # Read the file and convert to base64 for sending over websocket
-        with open(speech_file_path, "rb") as audio_file:
-            audio_content = audio_file.read()
-            base64_audio = base64.b64encode(audio_content).decode('utf-8')
-
-        # Optionally cleanup the file if needed
-        # os.remove(speech_file_path)
-
-        return base64_audio
+        
+        # Save to temporary file first
+        temp_audio_path = f"{AUDIO_DIR}/temp_tts_{uuid.uuid4()}.wav"
+        response.write_to_file(temp_audio_path)
+        
+        # Read the file and convert to base64
+        with open(temp_audio_path, 'rb') as f:
+            audio_content = f.read()
+            audio_base64 = base64.b64encode(audio_content).decode('utf-8')
+        
+        # Clean up temp file
+        try:
+            os.remove(temp_audio_path)
+        except Exception as e:
+            logger.warning(f"Failed to remove temp TTS file: {e}")
+        
+        logger.info(f"TTS successful, generated {len(audio_base64)} characters of base64 audio")
+        return audio_base64
+        
     except Exception as e:
-        print(f"TTS error: {str(e)}")
+        logger.error(f"Error in text-to-speech conversion: {str(e)}")
         return None
 
-# Routes and WebSocket handlers
+# Routes and HTTP handlers
 @app.get("/", response_class=HTMLResponse)
 async def get_index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return FileResponse("static/client/index.html")
 
-@app.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    await websocket.accept()
-
-    # Initialize conversation state for this connection
-    if session_id not in active_connections:
-        active_connections[session_id] = ConversationState()
-
-    conv_state = active_connections[session_id]
-
-    # Send initial greeting
-    initial_greeting = "Hi there! I'm AI Agent, a virtual sales representative. I'd like to learn more about your company and how we might be able to help you. Could you tell me the name of your company?"
-    conv_state.add_to_history("agent", initial_greeting)
-
-    greeting_audio = await text_to_speech(initial_greeting)
-    await websocket.send_json({
-        "type": "agent_response",
-        "text": initial_greeting,
-        "audio": greeting_audio
-    })
-
+@app.post("/api/chat/text")
+async def process_text_message(request: TextMessageRequest):
+    """Process text message and return AI response with streaming"""
     try:
-        while True:
-            data = await websocket.receive()
+        session_id = request.session_id
+        user_message = request.message
+        
+        logger.info(f"Processing text message from {session_id}: {user_message}")
+        
+        # Initialize conversation state if not exists
+        if session_id not in active_connections:
+            active_connections[session_id] = ConversationState()
+        
+        conv_state = active_connections[session_id]
+        conv_state.add_to_history("user", user_message)
+          # Get AI response
+        ai_response = await get_ai_response(conv_state, user_message)
+        conv_state.add_to_history("agent", ai_response)
+        
+        # Convert to speech
+        speech_audio = await asyncio.get_event_loop().run_in_executor(
+            None, text_to_speech, ai_response
+        )
+        
+        # Prepare response
+        response_data = {
+            "type": "agent_response",
+            "text": ai_response,
+            "audio": speech_audio,
+            "lead_info": conv_state.lead_info
+        }
+        
+        # Add media if any was triggered
+        if conv_state.media_to_display:
+            response_data["media"] = conv_state.media_to_display
+            conv_state.media_to_display = None
+        
+        logger.info(f"Sent text response to {session_id}")
+        return JSONResponse(content=response_data)
+        
+    except Exception as e:
+        logger.error(f"Error processing text message: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"type": "error", "message": "Failed to process your message"}
+        )
 
-            # Handle different message types
-            if "text" in data:
-                # Text input from user
-                user_message = data["text"]
-                conv_state.add_to_history("user", user_message)
+@app.post("/api/chat/audio")
+async def process_audio_message(session_id: str = Form(...), audio_file: UploadFile = File(...)):
+    """Process audio message and return AI response"""
+    try:
+        logger.info(f"Processing audio message from {session_id}")
+        
+        # Initialize conversation state if not exists
+        if session_id not in active_connections:
+            active_connections[session_id] = ConversationState()
+        
+        conv_state = active_connections[session_id]
+        
+        # Save uploaded audio file
+        audio_filename = f"{AUDIO_DIR}/{session_id}_{uuid.uuid4()}.wav"
+        
+        # Read and save audio content
+        audio_content = await audio_file.read()
+        async with aiofiles.open(audio_filename, 'wb') as f:
+            await f.write(audio_content)        # Transcribe audio
+        transcript = await asyncio.get_event_loop().run_in_executor(
+            None, transcribe_audio, audio_filename
+        )
+        if transcript:
+            logger.info(f"Audio transcribed from {session_id}: {transcript}")
+            conv_state.add_to_history("user", transcript)
+              # Get AI response
+            ai_response = await get_ai_response(conv_state, transcript)
+            conv_state.add_to_history("agent", ai_response)
+            
+            # Convert to speech
+            speech_audio = await asyncio.get_event_loop().run_in_executor(
+                None, text_to_speech, ai_response
+            )
+            
+            # Prepare response
+            response_data = {
+                "type": "agent_response",
+                "text": ai_response,
+                "transcript": transcript,
+                "audio": speech_audio,
+                "lead_info": conv_state.lead_info
+            }
+            
+            # Add media if any was triggered
+            if conv_state.media_to_display:
+                response_data["media"] = conv_state.media_to_display
+                conv_state.media_to_display = None
+            
+            logger.info(f"Sent audio response to {session_id}")
+            return JSONResponse(content=response_data)
+        else:
+            logger.error(f"Failed to transcribe audio from {session_id}")
+            return JSONResponse(
+                status_code=400,
+                content={"type": "error", "message": "Failed to transcribe audio"}
+            )
+            
+    except Exception as e:
+        logger.error(f"Error processing audio message: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"type": "error", "message": "Failed to process audio message"}
+        )
 
-                # Get AI response
-                ai_response = await get_ai_response(conv_state, user_message)
-                conv_state.add_to_history("agent", ai_response)
-
-                # Convert to speech
-                speech_audio = await text_to_speech(ai_response)
-
-                # Send response to client
-                response_data = {
-                    "type": "agent_response",
-                    "text": ai_response,
-                    "audio": speech_audio
-                }
-
-                # Add media if any was triggered
-                if conv_state.media_to_display:
-                    response_data["media"] = conv_state.media_to_display
-                    conv_state.media_to_display = None
-
-                await websocket.send_json(response_data)
-
-            elif "audio" in data:
-                # Audio input from user
-                audio_data = base64.b64decode(data["audio"].split(",")[1])
-
-                # Save audio to file
-                audio_filename = f"{AUDIO_DIR}/{session_id}_{uuid.uuid4()}.wav"
-                async with aiofiles.open(audio_filename, 'wb') as f:
-                    await f.write(audio_data)
-
-                # Transcribe audio
-                transcript = await transcribe_audio(audio_filename)
-                if transcript:
-                    conv_state.add_to_history("user", transcript)
-
-                    # Get AI response
-                    ai_response = await get_ai_response(conv_state, transcript)
-                    conv_state.add_to_history("agent", ai_response)
-
-                    # Convert to speech
-                    speech_audio = await text_to_speech(ai_response)
-
-                    # Send response to client
-                    response_data = {
-                        "type": "agent_response",
-                        "text": ai_response,
-                        "transcript": transcript,
-                        "audio": speech_audio
-                    }
-
-                    # Add media if any was triggered
-                    if conv_state.media_to_display:
-                        response_data["media"] = conv_state.media_to_display
-                        conv_state.media_to_display = None
-
-                    await websocket.send_json(response_data)
-                else:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": "Failed to transcribe audio"
-                    })
-
-            # Check if we have all the information needed
-            summary = conv_state.get_summary()
-            if not summary["missing_info"]:
-                # All information collected
-                conv_state.save_transcript(session_id)
-
-    except WebSocketDisconnect:
-        # Save conversation transcript when user disconnects
-        if session_id in active_connections:
-            active_connections[session_id].save_transcript(session_id)
-            del active_connections[session_id]
+@app.get("/api/session/{session_id}/start")
+async def start_session(session_id: str):
+    """Start a new session and return initial greeting"""
+    try:
+        logger.info(f"Starting new session: {session_id}")
+        
+        # Initialize conversation state
+        if session_id not in active_connections:
+            active_connections[session_id] = ConversationState()
+        
+        conv_state = active_connections[session_id]
+        
+        # Send initial greeting
+        initial_greeting = "Hi there! I'm Jane, an AI Sales Development Representative. I'd like to learn more about your company and how we might be able to help you. Could you tell me the name of your company?"
+        conv_state.add_to_history("agent", initial_greeting)
+          # Generate greeting audio
+        greeting_audio = await asyncio.get_event_loop().run_in_executor(
+            None, text_to_speech, initial_greeting
+        )
+        
+        response_data = {
+            "type": "agent_response",
+            "text": initial_greeting,
+            "audio": greeting_audio,
+            "lead_info": conv_state.lead_info
+        }
+        
+        logger.info(f"Session started for {session_id}")
+        return JSONResponse(content=response_data)
+        
+    except Exception as e:
+        logger.error(f"Error starting session {session_id}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"type": "error", "message": "Failed to start session"}
+        )
 
 @app.get("/summary/{session_id}")
 async def get_summary(session_id: str):
     if session_id in active_connections:
         return JSONResponse(content=active_connections[session_id].get_summary())
     raise HTTPException(status_code=404, detail="Session not found")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "AI Voice Agent API is running"}
+
+@app.get("/api/test")
+async def test_endpoint():
+    return {"message": "Backend is working!", "timestamp": datetime.now().isoformat()}
 
 
 if __name__ == "__main__":
