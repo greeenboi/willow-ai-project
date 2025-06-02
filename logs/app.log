@@ -63,3 +63,10 @@
 2025-06-02 14:10:42,280 - main - INFO - Starting TTS for text: Nice to meet you! OpenRouter sounds like an intere...
 2025-06-02 14:10:43,679 - main - INFO - TTS successful, generated 1612908 characters of base64 audio
 2025-06-02 14:10:43,684 - main - INFO - Sent text response to pjhonb1hoc
+2025-06-03 01:22:17,648 - database - INFO - Turso database initialized successfully
+2025-06-03 01:22:17,649 - main - INFO - Database manager initialized
+2025-06-03 01:22:17,668 - fastapi - ERROR - Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
