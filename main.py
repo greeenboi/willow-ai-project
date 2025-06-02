@@ -4,6 +4,7 @@ import base64
 import uuid
 import re
 import logging
+import requests
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal
@@ -325,7 +326,7 @@ def update_lead_info_from_conversation(state, user_input, ai_response):
 
 # Function to convert text to speech using Groq
 def text_to_speech(text):
-    """Convert text to speech using Groq PlayAI model."""
+    """Convert text to speech using Groq PlayAI model via HTTP API."""
     try:
         logger.info(f"Starting TTS for text: {text[:50]}...")
         groq_api_key = os.getenv("GROQ_API_KEY")
@@ -333,33 +334,31 @@ def text_to_speech(text):
             logger.error("GROQ_API_KEY not found in environment variables")
             return None
 
-        # Use synchronous client for TTS
-        sync_client = Groq(api_key=groq_api_key)
+        # Make HTTP request to Groq TTS API
+        url = "https://api.groq.com/openai/v1/audio/speech"
+        headers = {
+            "Authorization": f"Bearer {groq_api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "playai-tts",
+            "input": text,
+            "voice": "Cheyenne-PlayAI",
+            "response_format": "wav"
+        }
         
-        response = sync_client.audio.speech.create(
-            model="playai-tts",
-            voice="Fritz-PlayAI",
-            input=text,
-            response_format="wav"
-        )
+        response = requests.post(url, headers=headers, json=data)
         
-        # Save to temporary file first
-        temp_audio_path = f"{AUDIO_DIR}/temp_tts_{uuid.uuid4()}.wav"
-        response.write_to_file(temp_audio_path)
-        
-        # Read the file and convert to base64
-        with open(temp_audio_path, 'rb') as f:
-            audio_content = f.read()
+        if response.status_code == 200:
+            # Convert response content to base64
+            audio_content = response.content
             audio_base64 = base64.b64encode(audio_content).decode('utf-8')
-        
-        # Clean up temp file
-        try:
-            os.remove(temp_audio_path)
-        except Exception as e:
-            logger.warning(f"Failed to remove temp TTS file: {e}")
-        
-        logger.info(f"TTS successful, generated {len(audio_base64)} characters of base64 audio")
-        return audio_base64
+            
+            logger.info(f"TTS successful, generated {len(audio_base64)} characters of base64 audio")
+            return audio_base64
+        else:
+            logger.error(f"TTS API request failed with status {response.status_code}: {response.text}")
+            return None
         
     except Exception as e:
         logger.error(f"Error in text-to-speech conversion: {str(e)}")
