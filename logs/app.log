@@ -155,3 +155,15 @@ Before I do ...
 2025-06-03 01:54:54,788 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3421, Requested 255. Please try again in 30m11.944999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
 
 2025-06-03 01:54:54,789 - main - INFO - Sent text response to gb89blzsne9
+2025-06-03 08:11:37,405 - database - INFO - Turso database initialized successfully
+2025-06-03 08:11:37,407 - main - INFO - Database manager initialized
+2025-06-03 08:12:51,784 - main - INFO - Starting new session: d8dfuw3a4hn
+2025-06-03 08:12:53,538 - database - INFO - Created session: d8dfuw3a4hn
+2025-06-03 08:12:53,545 - main - INFO - Loaded session d8dfuw3a4hn from database with 0 messages
+2025-06-03 08:12:55,341 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 08:12:56,694 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 08:12:56,697 - main - INFO - Session started for d8dfuw3a4hn
+2025-06-03 08:12:56,744 - main - INFO - Starting new session: d8dfuw3a4hn
+2025-06-03 08:12:58,413 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 08:13:00,723 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 08:13:00,724 - main - INFO - Session started for d8dfuw3a4hn
