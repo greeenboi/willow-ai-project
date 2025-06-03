@@ -37,18 +37,44 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
-app = FastAPI()
+app = FastAPI(title="AI Voice Agent", description="SDR AI Voice Agent API", version="1.0.0")
 
-# Add CORS middleware for React development server
+# Configure CORS for both development and production
+allowed_origins = [
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",  # Local dev
+    "https://localhost:5173",  # HTTPS dev
+]
+
+# Add production domains if environment variables are set
+production_domain = os.getenv("PRODUCTION_DOMAIN")
+if production_domain:
+    allowed_origins.extend([
+        f"https://{production_domain}",
+        f"http://{production_domain}",
+    ])
+
+# Add Vercel domains (they use *.vercel.app pattern)
+vercel_domain = os.getenv("VERCEL_DOMAIN")
+if vercel_domain:
+    allowed_origins.extend([
+        f"https://{vercel_domain}",
+        f"https://{vercel_domain}.vercel.app",
+    ])
+
+# For development, allow all origins if specified
+if os.getenv("ALLOW_ALL_ORIGINS") == "true":
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Vite dev server default port
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount static files for the React client
+# Mount static files (backend only - for agent image and media)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 # Mount the React client files
 app.mount("/client", StaticFiles(directory="static/client"), name="client")

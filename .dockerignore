@@ -1,0 +1,48 @@
+# Node.js frontend files
+static/client/node_modules
+static/client/dist
+static/client/.next
+static/client/build
+
+# Development files
+*.log
+logs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+
+# Database files (will be created in container)
+*.db
+*.db-wal
+*.db-shm
+*.db-info
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Environment files (will be handled via Docker environment)
+# .env  # Comment this out if you want to include .env in container
+
+# Documentation
+README.md
+*.md
+
+# Frontend development files
+static/client/package-lock.json
+static/client/pnpm-lock.yaml
+static/client/yarn.lock

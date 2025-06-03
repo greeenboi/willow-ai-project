@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  ai-voice-agent-backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - TURSO_DATABASE_URL=${TURSO_DATABASE_URL}
+      - TURSO_AUTH_TOKEN=${TURSO_AUTH_TOKEN}
+      - PORT=8000
+      # Allow all origins for Vercel frontend
+      - ALLOW_ALL_ORIGINS=true
+      - PRODUCTION_DOMAIN=${PRODUCTION_DOMAIN:-your-frontend-domain.vercel.app}
+    volumes:
+      - ./logs:/app/logs
+      - ./static/audio:/app/static/audio
+      - ./transcripts:/app/transcripts
+      # Mount media directory for demos
+      - ./static/media:/app/static/media
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
