@@ -358,3 +358,233 @@ Before I do ...
 2025-06-04 00:34:13,595 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3524, Requested 112. Please try again in 14m2.247s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
 
 2025-06-04 00:34:13,597 - main - INFO - Sent text response to lllg61fxpjh
+2025-06-04 01:06:43,427 - database - INFO - Knowledge base already populated
+2025-06-04 01:06:43,430 - database - INFO - Turso database initialized successfully
+2025-06-04 01:06:43,431 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 01:12:01,269 - main - INFO - Starting new session: 2vvnr71py4m
+2025-06-04 01:12:03,261 - database - INFO - Created session: 2vvnr71py4m
+2025-06-04 01:12:03,267 - main - INFO - Loaded session 2vvnr71py4m from database with 0 messages
+2025-06-04 01:12:05,126 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:12:07,271 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-04 01:12:07,273 - main - INFO - Session started for 2vvnr71py4m
+2025-06-04 01:12:07,342 - main - INFO - Starting new session: 2vvnr71py4m
+2025-06-04 01:12:09,273 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:12:10,437 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:12:10,439 - main - INFO - Session started for 2vvnr71py4m
+2025-06-04 01:13:03,077 - main - INFO - Processing text message from 2vvnr71py4m: A Salesforce Architect is a highly skilled professional who designs and oversees the implementation of Salesforce solutions to meet a company's business needs. They act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-04 01:13:04,926 - main - INFO - Getting AI response for input: A Salesforce Architect is a highly skilled profess...
+2025-06-04 01:13:06,267 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:13:07,671 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:13:07,672 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-04 01:13:07,673 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-04 01:13:09,306 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-04 01:13:11,298 - main - INFO - TTS successful, generated 1036908 characters of base64 audio
+2025-06-04 01:13:12,713 - database - INFO - Logged media interaction: features/security for session 2vvnr71py4m
+2025-06-04 01:13:12,714 - main - INFO - Sent text response to 2vvnr71py4m
+2025-06-04 01:13:52,638 - main - INFO - Processing text message from 2vvnr71py4m: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.\
+2025-06-04 01:13:54,437 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-04 01:13:56,024 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:13:57,478 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:13:59,040 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:13:59,041 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-04 01:13:59,042 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 01:14:00,844 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 01:14:02,537 - main - INFO - TTS successful, generated 844908 characters of base64 audio
+2025-06-04 01:14:03,924 - database - INFO - Logged media interaction: features/core_features for session 2vvnr71py4m
+2025-06-04 01:14:03,925 - main - INFO - Sent text response to 2vvnr71py4m
+2025-06-04 01:14:13,258 - main - INFO - Processing text message from 2vvnr71py4m: Yes I would
+2025-06-04 01:14:15,105 - main - INFO - Getting AI response for input: Yes I would...
+2025-06-04 01:14:16,585 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:14:18,029 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:14:19,467 - database - INFO - Updated session: 2vvnr71py4m
+2025-06-04 01:14:19,468 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 01:14:21,343 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 01:14:23,437 - main - INFO - TTS successful, generated 844908 characters of base64 audio
+2025-06-04 01:14:23,438 - main - INFO - Sent text response to 2vvnr71py4m
+2025-06-04 01:14:49,707 - main - INFO - Starting new session: gsaw75l9wws
+2025-06-04 01:14:51,623 - database - INFO - Created session: gsaw75l9wws
+2025-06-04 01:14:51,629 - main - INFO - Loaded session gsaw75l9wws from database with 0 messages
+2025-06-04 01:14:53,448 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:14:56,020 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-04 01:14:56,022 - main - INFO - Session started for gsaw75l9wws
+2025-06-04 01:14:56,114 - main - INFO - Starting new session: gsaw75l9wws
+2025-06-04 01:15:01,073 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:15:02,753 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:15:02,755 - main - INFO - Session started for gsaw75l9wws
+2025-06-04 01:15:25,301 - main - INFO - Starting new session: 5smrr132ibx
+2025-06-04 01:15:27,837 - database - INFO - Created session: 5smrr132ibx
+2025-06-04 01:15:27,842 - main - INFO - Loaded session 5smrr132ibx from database with 0 messages
+2025-06-04 01:15:30,389 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:15:33,109 - main - INFO - TTS successful, generated 1740908 characters of base64 audio
+2025-06-04 01:15:33,111 - main - INFO - Session started for 5smrr132ibx
+2025-06-04 01:15:33,156 - main - INFO - Starting new session: 5smrr132ibx
+2025-06-04 01:15:38,527 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:15:40,011 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:15:40,013 - main - INFO - Session started for 5smrr132ibx
+2025-06-04 01:21:53,776 - main - INFO - Starting new session: qcgzn3vz27
+2025-06-04 01:21:55,895 - database - INFO - Created session: qcgzn3vz27
+2025-06-04 01:21:55,901 - main - INFO - Loaded session qcgzn3vz27 from database with 0 messages
+2025-06-04 01:21:57,849 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:21:59,456 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-04 01:21:59,458 - main - INFO - Session started for qcgzn3vz27
+2025-06-04 01:21:59,521 - main - INFO - Starting new session: qcgzn3vz27
+2025-06-04 01:22:01,495 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:22:02,948 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:22:02,950 - main - INFO - Session started for qcgzn3vz27
+2025-06-04 01:22:43,178 - main - INFO - Starting new session: lqnqn66c2oj
+2025-06-04 01:22:44,797 - database - INFO - Created session: lqnqn66c2oj
+2025-06-04 01:22:44,802 - main - INFO - Loaded session lqnqn66c2oj from database with 0 messages
+2025-06-04 01:22:46,630 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:22:48,922 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-04 01:22:48,925 - main - INFO - Session started for lqnqn66c2oj
+2025-06-04 01:22:48,985 - main - INFO - Starting new session: lqnqn66c2oj
+2025-06-04 01:22:50,930 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:22:50,937 - main - INFO - Starting new session: lj81plcywxl
+2025-06-04 01:22:53,255 - database - INFO - Created session: lj81plcywxl
+2025-06-04 01:22:53,260 - main - INFO - Loaded session lj81plcywxl from database with 0 messages
+2025-06-04 01:22:55,654 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:22:57,140 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:22:57,143 - main - INFO - Session started for lqnqn66c2oj
+2025-06-04 01:22:57,234 - main - INFO - TTS successful, generated 1740908 characters of base64 audio
+2025-06-04 01:22:57,236 - main - INFO - Session started for lj81plcywxl
+2025-06-04 01:22:57,369 - main - INFO - Starting new session: lj81plcywxl
+2025-06-04 01:22:59,428 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:23:01,660 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 01:23:01,662 - main - INFO - Session started for lj81plcywxl
+2025-06-04 01:32:24,915 - database - INFO - Knowledge base already populated
+2025-06-04 01:32:24,917 - database - INFO - Turso database initialized successfully
+2025-06-04 01:32:24,918 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 01:53:13,418 - main - INFO - Starting new session: 996woew4d7i
+2025-06-04 01:53:15,435 - database - INFO - Created session: 996woew4d7i
+2025-06-04 01:53:15,440 - main - INFO - Loaded session 996woew4d7i from database with 0 messages
+2025-06-04 01:53:17,333 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:53:18,867 - main - INFO - TTS successful, generated 1740908 characters of base64 audio
+2025-06-04 01:53:18,870 - main - INFO - Session started for 996woew4d7i
+2025-06-04 01:53:18,920 - main - INFO - Starting new session: 996woew4d7i
+2025-06-04 01:53:20,840 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 01:53:20,969 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3553, Requested 124. Please try again in 30m44.578s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 01:53:20,970 - main - INFO - Session started for 996woew4d7i
+2025-06-04 01:55:41,620 - database - INFO - Knowledge base already populated
+2025-06-04 01:55:41,622 - database - INFO - Turso database initialized successfully
+2025-06-04 01:55:41,623 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 01:56:08,734 - main - INFO - Starting session: session_1748982368688_bi5lpmdnn8t, restore: False
+2025-06-04 01:56:10,355 - database - INFO - Created session: session_1748982368688_bi5lpmdnn8t
+2025-06-04 01:56:12,117 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:56:12,120 - main - INFO - Starting session: session_1748982368692_20uxzz1xezc, restore: False
+2025-06-04 01:56:13,612 - database - INFO - Created session: session_1748982368692_20uxzz1xezc
+2025-06-04 01:56:16,676 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:56:16,883 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3546, Requested 227. Please try again in 1h9m0.665s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 01:56:16,884 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3546, Requested 227. Please try again in 1h9m0.658s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 01:56:16,885 - main - INFO - Session started for session_1748982368692_20uxzz1xezc
+2025-06-04 01:56:16,887 - main - INFO - Session started for session_1748982368688_bi5lpmdnn8t
+2025-06-04 01:56:25,402 - main - INFO - Starting session: session_1748982385396_vn5nabtboj8, restore: False
+2025-06-04 01:56:27,181 - database - INFO - Created session: session_1748982385396_vn5nabtboj8
+2025-06-04 01:56:28,935 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 01:56:29,079 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3546, Requested 227. Please try again in 1h8m48.475s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 01:56:29,080 - main - INFO - Session started for session_1748982385396_vn5nabtboj8
+2025-06-04 02:00:47,598 - database - INFO - Knowledge base already populated
+2025-06-04 02:00:47,600 - database - INFO - Turso database initialized successfully
+2025-06-04 02:00:47,600 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 02:01:11,657 - main - INFO - Generated new session ID: session_516387701260
+2025-06-04 02:01:11,667 - main - INFO - Starting session: session_516387701260, restore: False
+2025-06-04 02:01:13,372 - database - INFO - Created session: session_516387701260
+2025-06-04 02:01:15,195 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 02:01:15,366 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3534, Requested 227. Please try again in 1h4m2.200999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:01:15,368 - main - INFO - Session started for session_516387701260
+2025-06-04 02:01:34,373 - main - INFO - Generated new session ID: session_60a3689b9866
+2025-06-04 02:01:34,410 - main - INFO - Starting session: session_60a3689b9866, restore: False
+2025-06-04 02:01:36,205 - database - INFO - Created session: session_60a3689b9866
+2025-06-04 02:01:37,878 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 02:01:37,989 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3533, Requested 227. Please try again in 1h3m39.562s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:01:37,990 - main - INFO - Session started for session_60a3689b9866
+2025-06-04 02:02:13,347 - database - INFO - Knowledge base already populated
+2025-06-04 02:02:13,348 - database - INFO - Turso database initialized successfully
+2025-06-04 02:02:13,349 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 02:02:13,552 - main - INFO - Generated new session ID: session_337fc3839ca6
+2025-06-04 02:02:13,558 - main - INFO - Generated new session ID: session_a516d495357d
+2025-06-04 02:02:13,607 - main - INFO - Starting session: session_337fc3839ca6, restore: False
+2025-06-04 02:02:15,251 - database - INFO - Created session: session_337fc3839ca6
+2025-06-04 02:02:17,110 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 02:02:17,114 - main - INFO - Starting session: session_a516d495357d, restore: False
+2025-06-04 02:02:18,754 - database - INFO - Created session: session_a516d495357d
+2025-06-04 02:02:20,482 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 02:02:20,658 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3531, Requested 227. Please try again in 1h2m56.894s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:02:20,659 - main - INFO - Session started for session_a516d495357d
+2025-06-04 02:02:20,667 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3531, Requested 227. Please try again in 1h2m56.890999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:02:20,668 - main - INFO - Session started for session_337fc3839ca6
+2025-06-04 02:02:59,181 - main - INFO - Processing text message from session_a516d495357d: HI, Im Suvan and I am a Senior Architect at Salesforce.
+2025-06-04 02:03:00,918 - main - INFO - Getting AI response for input: HI, Im Suvan and I am a Senior Architect at Salesf...
+2025-06-04 02:03:02,170 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:03:02,171 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-04 02:03:04,096 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-04 02:03:04,351 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3529, Requested 100. Please try again in 11m25.246s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:03:04,353 - main - INFO - Sent text response to session_a516d495357d
+2025-06-04 02:03:37,518 - main - INFO - Processing text message from session_a516d495357d: Here at Salesforce We work on our CRM and my rol as a Salesforce Architect is a highly skilled professional who designs and oversees the implementation of Salesforce solutions to meet a company's business needs. They act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-04 02:03:39,435 - main - INFO - Getting AI response for input: Here at Salesforce We work on our CRM and my rol a...
+2025-06-04 02:03:40,899 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:03:42,550 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:03:42,551 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-04 02:03:42,551 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-04 02:03:44,288 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-04 02:03:44,440 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3527, Requested 77. Please try again in 1m33.111999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:03:46,031 - database - INFO - Logged media interaction: features/security for session session_a516d495357d
+2025-06-04 02:03:46,032 - main - INFO - Sent text response to session_a516d495357d
+2025-06-04 02:04:00,964 - main - INFO - Processing text message from session_a516d495357d: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.
+2025-06-04 02:04:03,179 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-04 02:04:03,186 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 02:04:04,572 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:06,041 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:07,634 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:07,635 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-04 02:04:07,636 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 02:04:09,488 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 02:04:09,704 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3526, Requested 112. Please try again in 15m7.873999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:04:11,258 - database - INFO - Logged media interaction: features/core_features for session session_a516d495357d
+2025-06-04 02:04:11,259 - main - INFO - Sent text response to session_a516d495357d
+2025-06-04 02:04:46,643 - main - INFO - Processing text message from session_a516d495357d: YEa sure
+2025-06-04 02:04:48,419 - main - INFO - Getting AI response for input: YEa sure...
+2025-06-04 02:04:48,420 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 02:04:49,698 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:51,032 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:52,388 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:04:52,389 - main - INFO - Demo triggered by user agreement
+2025-06-04 02:04:52,390 - main - INFO - Updated session state: agent_asked_demo = False
+2025-06-04 02:04:52,390 - main - INFO - Demo shown - resetting agent_asked_demo flag
+2025-06-04 02:04:52,391 - main - INFO - Knowledge manager response: Perfect! Here's a quick overview of how Willow AI works in action. This demo shows how Willow AI eng...
+2025-06-04 02:04:54,108 - main - INFO - Starting TTS for text: Perfect! Here's a quick overview of how Willow AI ...
+2025-06-04 02:04:54,249 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3524, Requested 299. Please try again in 1h29m11.305s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:04:55,531 - database - INFO - Logged media interaction: demo/product_overview for session session_a516d495357d
+2025-06-04 02:04:55,531 - main - INFO - Sent text response to session_a516d495357d
+2025-06-04 02:05:36,529 - main - INFO - Processing text message from session_a516d495357d: This is a Great product but We prefer human SDRs for qualification
+2025-06-04 02:05:38,187 - main - INFO - Getting AI response for input: This is a Great product but We prefer human SDRs f...
+2025-06-04 02:05:39,674 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:05:40,982 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:05:42,455 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:05:42,456 - main - INFO - Knowledge manager response: Willow AI isn't replacing SDRs—it's making them more efficient. Instead of spending time on repetiti...
+2025-06-04 02:05:44,011 - main - INFO - Starting TTS for text: Willow AI isn't replacing SDRs—it's making them mo...
+2025-06-04 02:05:44,349 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3522, Requested 167. Please try again in 35m33.373s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:05:44,350 - main - INFO - Sent text response to session_a516d495357d
+2025-06-04 02:06:05,528 - main - INFO - Processing text message from session_a516d495357d: Ok you have convinced me, What next?
+2025-06-04 02:06:07,159 - main - INFO - Getting AI response for input: Ok you have convinced me, What next?...
+2025-06-04 02:06:07,161 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 02:06:08,548 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:06:09,858 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:06:11,113 - database - INFO - Updated session: session_a516d495357d
+2025-06-04 02:06:11,114 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 02:06:12,713 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 02:06:12,846 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3521, Requested 112. Please try again in 13m4.709999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 02:06:12,847 - main - INFO - Sent text response to session_a516d495357d
