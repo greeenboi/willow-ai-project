@@ -20,8 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy only backend files (excluding frontend)
 COPY main.py .
 COPY database.py .
-COPY .env .
 
+# Copy .env if it exists (optional for local builds, not needed in production)
+COPY .env* ./
 
 # Create necessary directories
 RUN mkdir -p logs static/audio transcripts static/media
