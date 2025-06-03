@@ -270,3 +270,91 @@ Before I do ...
 2025-06-03 16:39:11,410 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
 2025-06-03 16:39:12,723 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
 2025-06-03 16:39:12,725 - main - INFO - Session started for 607agh5kswj
+2025-06-03 23:51:52,058 - database - INFO - Turso database initialized successfully
+2025-06-03 23:51:52,059 - main - INFO - Database manager initialized
+2025-06-03 23:52:09,308 - main - INFO - Starting new session: 15skj9f21zx
+2025-06-03 23:52:11,702 - database - INFO - Created session: 15skj9f21zx
+2025-06-03 23:52:11,709 - main - INFO - Loaded session 15skj9f21zx from database with 0 messages
+2025-06-03 23:52:14,109 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 23:52:15,709 - main - INFO - TTS successful, generated 1420908 characters of base64 audio
+2025-06-03 23:52:15,711 - main - INFO - Session started for 15skj9f21zx
+2025-06-03 23:52:15,774 - main - INFO - Starting new session: 15skj9f21zx
+2025-06-03 23:52:18,248 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 23:52:19,867 - main - INFO - TTS successful, generated 1420908 characters of base64 audio
+2025-06-03 23:52:19,869 - main - INFO - Session started for 15skj9f21zx
+2025-06-03 23:52:59,235 - main - INFO - Processing audio message from 15skj9f21zx
+2025-06-03 23:52:59,251 - main - INFO - Starting audio transcription for file: static/audio/15skj9f21zx_aa419cd5-168f-4cef-a58c-3f679fbbda82.wav
+2025-06-03 23:53:01,714 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 200 OK"
+2025-06-03 23:53:01,718 - main - INFO - Transcription successful:  I work at Langfellow....
+2025-06-03 23:53:01,727 - main - INFO - Audio transcribed from 15skj9f21zx:  I work at Langfellow.
+2025-06-03 23:53:03,675 - main - INFO - Getting AI response for input:  I work at Langfellow....
+2025-06-03 23:53:04,286 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 23:53:04,305 - main - INFO - AI response generated: Nice to meet you! Langfellow, that's a great company. What industry or domain would you say Langfell...
+2025-06-03 23:53:05,788 - database - INFO - Updated session: 15skj9f21zx
+2025-06-03 23:53:05,789 - main - INFO - Extracted company name: Langfellow.
+2025-06-03 23:53:06,195 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 23:53:06,235 - main - WARNING - Failed to parse AI extraction response: Here is the extracted information in the requested JSON format:
+
+{"company_name": "Langfellow", "domain": null, "problem": null, "budget": null}
+2025-06-03 23:53:08,137 - main - INFO - Starting TTS for text: Nice to meet you! Langfellow, that's a great compa...
+2025-06-03 23:53:09,324 - main - INFO - TTS successful, generated 1292908 characters of base64 audio
+2025-06-03 23:53:09,327 - main - INFO - Sent audio response to 15skj9f21zx
+2025-06-04 00:26:45,388 - database - INFO - Default knowledge base populated successfully
+2025-06-04 00:26:45,390 - database - INFO - Turso database initialized successfully
+2025-06-04 00:26:45,391 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 00:27:13,551 - main - INFO - Starting new session: lllg61fxpjh
+2025-06-04 00:27:15,382 - database - INFO - Created session: lllg61fxpjh
+2025-06-04 00:27:15,388 - main - INFO - Loaded session lllg61fxpjh from database with 0 messages
+2025-06-04 00:27:17,346 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 00:27:18,924 - main - INFO - TTS successful, generated 1740908 characters of base64 audio
+2025-06-04 00:27:18,927 - main - INFO - Session started for lllg61fxpjh
+2025-06-04 00:27:19,010 - main - INFO - Starting new session: lllg61fxpjh
+2025-06-04 00:27:20,903 - main - INFO - Starting TTS for text: Welcome back! Let's continue where we left off. Co...
+2025-06-04 00:27:21,833 - main - INFO - TTS successful, generated 972908 characters of base64 audio
+2025-06-04 00:27:21,837 - main - INFO - Session started for lllg61fxpjh
+2025-06-04 00:28:10,183 - main - INFO - Processing text message from lllg61fxpjh: Hi I work at Salesforce. Can you tell me more about your product willow ai?
+2025-06-04 00:28:12,482 - main - INFO - Getting AI response for input: Hi I work at Salesforce. Can you tell me more abou...
+2025-06-04 00:28:14,115 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:28:14,117 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-04 00:28:16,061 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-04 00:28:17,026 - main - INFO - TTS successful, generated 716908 characters of base64 audio
+2025-06-04 00:28:17,028 - main - INFO - Sent text response to lllg61fxpjh
+2025-06-04 00:28:48,828 - main - INFO - Processing text message from lllg61fxpjh: Sure I am a Product manager at Salesforce and I lead the development team
+2025-06-04 00:28:50,979 - main - INFO - Getting AI response for input: Sure I am a Product manager at Salesforce and I le...
+2025-06-04 00:28:52,506 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:28:52,507 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-04 00:28:54,709 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-04 00:28:55,541 - main - INFO - TTS successful, generated 716908 characters of base64 audio
+2025-06-04 00:28:55,543 - main - INFO - Sent text response to lllg61fxpjh
+2025-06-04 00:32:32,070 - main - INFO - Processing text message from lllg61fxpjh: I am a Salesforce Architect, I work on designs and oversee the implementation of Salesforce solutions to meet a company's business needs. I act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-04 00:32:34,660 - main - INFO - Getting AI response for input: I am a Salesforce Architect, I work on designs and...
+2025-06-04 00:32:36,044 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:32:37,311 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:32:37,312 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-04 00:32:37,313 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-04 00:32:39,559 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-04 00:32:41,734 - main - INFO - TTS successful, generated 1036908 characters of base64 audio
+2025-06-04 00:32:43,127 - database - INFO - Logged media interaction: features/security for session lllg61fxpjh
+2025-06-04 00:32:43,128 - main - INFO - Sent text response to lllg61fxpjh
+2025-06-04 00:33:48,125 - main - INFO - Processing text message from lllg61fxpjh: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.
+2025-06-04 00:33:49,864 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-04 00:33:51,199 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:33:52,590 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:33:54,077 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:33:54,078 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-04 00:33:54,079 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 00:33:56,238 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 00:33:56,384 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3524, Requested 112. Please try again in 14m19.458999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 00:33:57,775 - database - INFO - Logged media interaction: features/core_features for session lllg61fxpjh
+2025-06-04 00:33:57,776 - main - INFO - Sent text response to lllg61fxpjh
+2025-06-04 00:34:05,869 - main - INFO - Processing text message from lllg61fxpjh: Sure !
+2025-06-04 00:34:07,570 - main - INFO - Getting AI response for input: Sure !...
+2025-06-04 00:34:08,981 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:34:10,373 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:34:11,716 - database - INFO - Updated session: lllg61fxpjh
+2025-06-04 00:34:11,717 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 00:34:13,452 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 00:34:13,595 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3524, Requested 112. Please try again in 14m2.247s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 00:34:13,597 - main - INFO - Sent text response to lllg61fxpjh
