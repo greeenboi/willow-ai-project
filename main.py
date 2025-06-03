@@ -74,10 +74,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files (backend only - for agent image and media)
+# # Mount static files (backend only - for agent image and media)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# Mount the React client files
-app.mount("/client", StaticFiles(directory="static/client"), name="client")
+# # Mount the React client files
+# app.mount("/client", StaticFiles(directory="static/client"), name="client")
 
 
 groq_api_key = os.getenv("GROQ_API_KEY")
@@ -427,9 +427,10 @@ def text_to_speech(text):
         return None
 
 # Routes and HTTP handlers
-@app.get("/", response_class=HTMLResponse)
-async def get_index(request: Request):
-    return FileResponse("static/client/index.html")
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "message": "AI Voice Agent API is running"}
+
 
 @app.post("/api/chat/text")
 async def process_text_message(request: TextMessageRequest):
