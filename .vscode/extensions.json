@@ -1,0 +1,17 @@
+{
+    "recommendations": [
+        "biomejs.biome",
+        "ms-azuretools.vscode-containers",
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        "docker.docker",
+        "dsznajder.es7-react-js-snippets",
+        "qwtel.sqlite-viewer",
+        "alexcvzz.vscode-sqlite",
+        "sensourceinc.vscode-sql-beautify",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-mysql",
+        "mtxr.sqltools-driver-pg",
+        "ms-vscode-remote.remote-wsl"
+    ]
+}
