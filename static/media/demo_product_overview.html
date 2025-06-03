@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Willow AI Product Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .demo-step {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+        .demo-step h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .cta {
+            margin-top: 40px;
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🤖 Willow AI Product Demo</h1>
+        <p style="font-size: 1.2em; margin-bottom: 40px;">See how Willow AI transforms your website visitors into qualified leads</p>
+        
+        <div class="demo-step">
+            <h3>Step 1: Instant Engagement</h3>
+            <p>When a visitor lands on your website, Willow AI instantly engages them in natural conversation, just like a human SDR would.</p>
+        </div>
+        
+        <div class="demo-step">
+            <h3>Step 2: Smart Qualification</h3>
+            <p>Willow AI asks the right questions based on the visitor's role and company, gathering key information like company size, budget, and pain points.</p>
+        </div>
+        
+        <div class="demo-step">
+            <h3>Step 3: Dynamic Responses</h3>
+            <p>Unlike basic chatbots, Willow AI handles objections, answers complex questions, and adapts the conversation flow in real-time.</p>
+        </div>
+        
+        <div class="demo-step">
+            <h3>Step 4: Seamless Handoff</h3>
+            <p>Qualified leads are automatically synced to your CRM with complete conversation context, ready for your sales team to close.</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h4>🎯 Smart Targeting</h4>
+                <p>Identifies decision-makers and budget holders</p>
+            </div>
+            <div class="feature">
+                <h4>🔄 24/7 Availability</h4>
+                <p>Never miss a lead, even outside business hours</p>
+            </div>
+            <div class="feature">
+                <h4>📈 Higher Conversion</h4>
+                <p>3x better conversion than traditional forms</p>
+            </div>
+            <div class="feature">
+                <h4>⚡ Instant Response</h4>
+                <p>No more waiting for SDR availability</p>
+            </div>
+        </div>
+        
+        <button class="cta" onclick="window.parent.postMessage('demo_completed', '*')">See Willow AI in Action</button>
+    </div>
+</body>
+</html>
