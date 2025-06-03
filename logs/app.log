@@ -167,3 +167,15 @@ Before I do ...
 2025-06-03 08:12:58,413 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
 2025-06-03 08:13:00,723 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
 2025-06-03 08:13:00,724 - main - INFO - Session started for d8dfuw3a4hn
+2025-06-03 07:07:06,944 - database - INFO - Turso database initialized successfully
+2025-06-03 07:07:06,947 - main - INFO - Database manager initialized
+2025-06-03 07:07:45,096 - main - INFO - Starting new session: 05dy8k4thdp
+2025-06-03 07:07:47,103 - database - INFO - Created session: 05dy8k4thdp
+2025-06-03 07:07:47,108 - main - INFO - Loaded session 05dy8k4thdp from database with 0 messages
+2025-06-03 07:07:49,521 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 07:07:52,941 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 07:07:52,945 - main - INFO - Session started for 05dy8k4thdp
+2025-06-03 07:07:53,001 - main - INFO - Starting new session: 05dy8k4thdp
+2025-06-03 07:07:55,544 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 07:07:57,384 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 07:07:57,386 - main - INFO - Session started for 05dy8k4thdp
