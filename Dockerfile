@@ -1,5 +1,5 @@
-# Use Python 3.10 slim image
-FROM python:3.10-slim
+# Use Python 3.13 slim image for better security (0 high vulnerabilities)
+FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
@@ -18,15 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only backend files (excluding frontend)
-COPY main.py .
-COPY database.py .
-COPY .env .
-
-# Create necessary directories
-RUN mkdir -p logs static/audio transcripts static/media
-
-# Create a simple static file for agent image (copy from host if needed)
-COPY static/client/public/agent-jane.jpg static/
+COPY . .
 
 # Expose port
 EXPOSE 8000
@@ -40,5 +32,5 @@ ENV PORT=8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application (use PORT env var for flexibility)
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT
+# Run the application (use shell form to support environment variable)
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
