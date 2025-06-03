@@ -330,10 +330,11 @@ async def get_ai_response(conversation_state, user_input):
                 response_text = response_text[:start_idx].strip() + " " + response_text[end_idx:].strip()
                 logger.info(f"Media command extracted: {media_command}")
             except Exception as e:
-                logger.warning(f"Failed to parse media command: {str(e)}")
-
-        # Update lead info based on AI response
+                logger.warning(f"Failed to parse media command: {str(e)}")        # Update lead info based on AI response
         update_lead_info_from_conversation(conversation_state, user_input, response_text)
+        
+        # Try AI extraction as fallback if pattern matching didn't find everything
+        await extract_lead_info_with_ai(conversation_state, user_input)
 
         return response_text
     except Exception as e:
@@ -342,49 +343,181 @@ async def get_ai_response(conversation_state, user_input):
 
 # Function to update lead info based on conversation
 def update_lead_info_from_conversation(state, user_input, ai_response):
-    # Simple keyword extraction for demo purposes
-    # Normally you'd use NER or a more sophisticated extraction method
-
+    """Enhanced lead information extraction using AI-powered analysis."""
     user_text = user_input.lower()
-
-    # Company name detection
+    original_text = user_input  # Keep original case for proper names
+    
+    # Company name detection with improved patterns
     if state.lead_info["company_name"] is None:
-        company_indicators = ["company", "work for", "work at", "called", "named"]
-        if any(indicator in user_text for indicator in company_indicators):
-            words = user_text.split()
-            # Very simple extraction - would need to be more sophisticated in production
-            for i, word in enumerate(words):
-                if word in company_indicators and i+1 < len(words):
-                    state.update_lead_info("company_name", words[i+1].title())
+        company_patterns = [
+            r"(?:work (?:for|at)|company (?:is|called|named)|at (?:a )?company called|employed (?:by|at)) ([A-Za-z][A-Za-z0-9\s&.-]{1,30})",
+            r"(?:i'm from|we're|company:?) ([A-Z][A-Za-z0-9\s&.-]{1,30})",
+            r"(?:my company|our company) (?:is )?([A-Z][A-Za-z0-9\s&.-]{1,30})",
+            r"([A-Z][A-Za-z0-9&.-]{2,20})(?: (?:inc|corp|llc|ltd|company|technologies|tech|solutions|systems))",
+        ]
+        
+        for pattern in company_patterns:
+            matches = re.findall(pattern, original_text, re.IGNORECASE)
+            if matches:
+                company_name = matches[0].strip()
+                # Filter out common false positives
+                false_positives = ["google", "linkedin", "facebook", "microsoft", "amazon", "apple", "the company", "my company", "our company"]
+                if company_name.lower() not in false_positives and len(company_name) > 2:
+                    state.update_lead_info("company_name", company_name.title())
+                    logger.info(f"Extracted company name: {company_name}")
                     break
 
-    # Domain detection
+    # Enhanced domain/industry detection
     if state.lead_info["domain"] is None:
-        domains = ["tech", "healthcare", "finance", "education", "retail", "manufacturing",
-                  "software", "insurance", "banking", "marketing"]
-        for domain in domains:
-            if domain in user_text:
-                state.update_lead_info("domain", domain.title())
-                break
+        # Industry keywords with context
+        industry_keywords = {
+            "technology": ["tech", "software", "saas", "platform", "development", "programming", "coding", "app", "mobile", "web", "digital", "it", "information technology"],
+            "healthcare": ["healthcare", "medical", "hospital", "clinic", "pharmaceutical", "pharma", "biotech", "health", "medicine", "patient", "doctor"],
+            "finance": ["finance", "financial", "banking", "bank", "investment", "insurance", "trading", "accounting", "fintech"],
+            "education": ["education", "school", "university", "college", "learning", "training", "academic", "student", "teacher", "curriculum"],
+            "retail": ["retail", "ecommerce", "e-commerce", "store", "shopping", "consumer", "merchandise", "sales"],
+            "manufacturing": ["manufacturing", "factory", "production", "industrial", "automotive", "aerospace", "machinery"],
+            "marketing": ["marketing", "advertising", "branding", "agency", "digital marketing", "social media", "content"],
+            "consulting": ["consulting", "advisory", "professional services", "consulting firm"],
+            "real estate": ["real estate", "property", "housing", "construction", "development"],
+            "logistics": ["logistics", "shipping", "transportation", "supply chain", "delivery", "warehouse"],
+            "energy": ["energy", "utilities", "power", "renewable", "oil", "gas", "solar", "wind"],
+            "government": ["government", "public sector", "municipal", "federal", "state", "agency"]
+        }
+        
+        # Score each industry based on keyword matches
+        industry_scores = {}
+        for industry, keywords in industry_keywords.items():
+            score = sum(1 for keyword in keywords if keyword in user_text)
+            if score > 0:
+                industry_scores[industry] = score
+        
+        # Select industry with highest score
+        if industry_scores:
+            best_industry = max(industry_scores, key=industry_scores.get)
+            state.update_lead_info("domain", best_industry.title())
+            logger.info(f"Extracted domain: {best_industry}")
 
-    # Problem detection
-    if state.lead_info["problem"] is None and ("problem" in user_text or "challenge" in user_text or "issue" in user_text):
-        # Extract sentence containing "problem"
-        sentences = user_text.split('.')
-        for sentence in sentences:
-            if "problem" in sentence or "challenge" in sentence or "issue" in sentence:
-                state.update_lead_info("problem", sentence.strip())
-                break
+    # Enhanced problem detection with context extraction
+    if state.lead_info["problem"] is None:
+        problem_patterns = [
+            r"(?:problem|challenge|issue|struggle|difficulty|pain point|trouble|concern)(?:\s+(?:is|we have|with|that))?\s+(.{10,100})",
+            r"(?:we need|looking for|trying to|want to|hoping to|need help with)\s+(.{10,100})",
+            r"(?:can't|cannot|unable to|struggling to|having trouble|difficult to)\s+(.{10,100})",
+            r"(?:improve|solve|fix|address|handle|deal with|overcome)\s+(.{10,100})",
+        ]
+        
+        for pattern in problem_patterns:
+            matches = re.findall(pattern, user_text, re.IGNORECASE)
+            if matches:
+                problem_text = matches[0].strip()
+                # Clean up the extracted text
+                problem_text = re.sub(r'\s+', ' ', problem_text)  # Remove extra whitespace
+                problem_text = problem_text.split('.')[0]  # Take first sentence
+                
+                if len(problem_text) > 10 and len(problem_text) < 200:
+                    state.update_lead_info("problem", problem_text.capitalize())
+                    logger.info(f"Extracted problem: {problem_text}")
+                    break
 
-    # Budget detection
+    # Enhanced budget detection with better number parsing
     if state.lead_info["budget"] is None:
-        budget_indicators = ["budget", "spend", "cost", "price", "pricing", "$", "dollar"]
-        if any(indicator in user_text for indicator in budget_indicators):
-            # Look for numbers near budget indicators
-            import re
-            numbers = re.findall(r'\$?\d+[k,m]?|\d+\s?thousand|\d+\s?million', user_text)            
-            if numbers:
-                state.update_lead_info("budget", numbers[0])
+        budget_patterns = [
+            r"budget.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
+            r"(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?).*?budget",
+            r"spend.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
+            r"(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?).*?(?:per|each|every)\s+(?:month|year)",
+            r"around.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
+            r"approximately.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
+            r"up to.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
+            r"(\d+)(?:\s*(?:k|thousand|m|million|b|billion))?\s*(?:dollar|buck)",
+        ]
+        
+        for pattern in budget_patterns:
+            matches = re.findall(pattern, user_text, re.IGNORECASE)
+            if matches:
+                budget_text = matches[0]
+                # Normalize budget format
+                budget_text = budget_text.replace(',', '').strip()
+                if not budget_text.startswith('$'):
+                    budget_text = f"${budget_text}"
+                
+                state.update_lead_info("budget", budget_text)
+                logger.info(f"Extracted budget: {budget_text}")
+                break
+        
+        # Also check for budget ranges or qualitative descriptions
+        if state.lead_info["budget"] is None:
+            qualitative_budgets = {
+                "small": ["small", "limited", "tight", "minimal", "low"],
+                "medium": ["medium", "moderate", "reasonable", "standard"],
+                "large": ["large", "significant", "substantial", "big", "high"],
+                "enterprise": ["enterprise", "corporate", "unlimited", "flexible"]
+            }
+            
+            for category, keywords in qualitative_budgets.items():
+                if any(keyword in user_text for keyword in keywords):
+                    budget_context = [word for word in user_text.split() if any(bkw in word for bkw in ["budget", "spend", "cost", "price"])]
+                    if budget_context:
+                        state.update_lead_info("budget", f"{category.title()} budget range")
+                        logger.info(f"Extracted qualitative budget: {category}")
+                        break
+
+# AI-powered lead extraction fallback
+async def extract_lead_info_with_ai(conversation_state, user_input):
+    """Use AI to extract lead information when pattern matching fails."""
+    try:
+        # Only try AI extraction if we're missing critical information
+        missing_fields = [k for k, v in conversation_state.lead_info.items() if v is None]
+        if not missing_fields:
+            return
+            
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            return
+            
+        async_client = AsyncGroq(api_key=groq_api_key)
+        
+        extraction_prompt = f"""
+Extract the following information from this conversation text. Return ONLY a JSON object with the requested fields. If information is not present, use null.
+
+Fields to extract:
+- company_name: The name of the user's company/organization (if mentioned)
+- domain: The industry/business domain (technology, healthcare, finance, etc.)
+- problem: The main challenge or problem they're trying to solve
+- budget: Any budget information mentioned (keep original format)
+
+Conversation text: "{user_input}"
+
+Current missing fields: {missing_fields}
+
+Return format: {{"company_name": "value or null", "domain": "value or null", "problem": "value or null", "budget": "value or null"}}
+"""
+
+        response = await async_client.chat.completions.create(
+            messages=[{"role": "user", "content": extraction_prompt}],
+            model="llama3-70b-8192",
+            temperature=0.1,
+            max_tokens=150
+        )
+        
+        ai_response = response.choices[0].message.content.strip()
+        
+        # Try to parse JSON response
+        try:
+            extracted_data = json.loads(ai_response)
+            
+            # Update conversation state with extracted information
+            for field, value in extracted_data.items():
+                if field in conversation_state.lead_info and value and value != "null":
+                    if conversation_state.lead_info[field] is None:  # Only update if currently empty
+                        conversation_state.update_lead_info(field, value)
+                        logger.info(f"AI extracted {field}: {value}")
+                        
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse AI extraction response: {ai_response}")
+            
+    except Exception as e:        logger.error(f"AI lead extraction error: {str(e)}")
 
 # Function to convert text to speech using Groq
 def text_to_speech(text):

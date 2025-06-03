@@ -73,7 +73,6 @@ function App() {
   const [connectionStatus, setConnectionStatus] = useState('Initializing...');
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [leadInfo, setLeadInfo] = useState<LeadInfo>({
     company_name: null,
     domain: null,
@@ -87,6 +86,7 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionId = useRef(Math.random().toString(36).substring(2, 15));
   const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const backend_url = import.meta.env.VITE_BACKEND_URL;
   console.log('Backend URL:', backend_url);
@@ -131,6 +131,7 @@ function App() {
     };
 
     initializeSession();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Initialize microphone recording
@@ -140,12 +141,25 @@ function App() {
       const recorder = new MediaRecorder(stream);
 
       recorder.ondataavailable = (event) => {
-        setAudioChunks(chunks => [...chunks, event.data]);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        setAudioChunks([]);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        
+        // Check if audio blob has content
+        if (audioBlob.size === 0) {
+          console.error('Audio blob is empty');
+          alert('No audio recorded. Please try again.');
+          return;
+        }
+
+        console.log(`Audio blob size: ${audioBlob.size} bytes`);
+        
+        // Clear the chunks for next recording
+        audioChunksRef.current = [];
 
         // Send audio to server using HTTP
         try {
@@ -200,9 +214,27 @@ function App() {
             }
           } else {
             console.error('Failed to send audio message');
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            
+            // Add error message to chat
+            const errorMessage: Message = {
+              text: 'Failed to process voice message. Please try again.',
+              sender: 'agent',
+              timestamp: new Date().toISOString(),
+            };
+            setMessages(prevMessages => [...prevMessages, errorMessage]);
           }
         } catch (error) {
           console.error('Error sending audio:', error);
+          
+          // Add error message to chat
+          const errorMessage: Message = {
+            text: 'Network error. Please check your connection and try again.',
+            sender: 'agent',
+            timestamp: new Date().toISOString(),
+          };
+          setMessages(prevMessages => [...prevMessages, errorMessage]);
         } finally {
           setIsLoading(false);
         }
@@ -228,18 +260,61 @@ function App() {
         if (!initialized) return;
       }
 
-      setAudioChunks([]);
+      // Clear previous audio chunks and start fresh recording
+      audioChunksRef.current = [];
       mediaRecorder?.start();
       setIsRecording(true);
     }
   };
 
   // Play audio from base64 string
-  const playAudio = (base64Audio: string) => {
+  const playAudio = async (base64Audio: string) => {
     if (!base64Audio) return;
 
-    const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
-    audio.play();
+    try {
+      const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
+      
+      // Set volume and preload
+      audio.volume = 0.7;
+      audio.preload = 'auto';
+      
+      // Handle autoplay policy by trying to play and catching the error
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (autoplayError) {
+      // If autoplay fails, show a visual indicator that audio is available
+      console.log('Audio autoplay prevented. Audio will play after user interaction.', autoplayError);
+      
+      // Create a click handler to play audio when user interacts
+      const handleUserInteraction = async () => {
+        try {
+          const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
+          audio.volume = 0.7;
+          await audio.play();
+          
+          // Remove the event listener after playing
+          document.removeEventListener('click', handleUserInteraction);
+          document.removeEventListener('keydown', handleUserInteraction);
+        } catch (playError) {
+          console.error('Failed to play audio after user interaction:', playError);
+        }
+      };
+      
+      // Add event listeners for user interaction
+      document.addEventListener('click', handleUserInteraction, { once: true });
+      document.addEventListener('keydown', handleUserInteraction, { once: true });
+      
+      // Show a visual notification
+      const audioNotification: Message = {
+        text: '🔊 Audio response is ready. Click anywhere to play.',
+        sender: 'agent',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages(prevMessages => [...prevMessages, audioNotification]);
+    }
   };
 
   // Send a message
