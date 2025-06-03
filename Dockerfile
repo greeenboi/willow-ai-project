@@ -18,7 +18,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only backend files (excluding frontend)
-COPY . .
+COPY main.py .
+COPY database.py .
+COPY .env .
+
+
+# Create necessary directories
+RUN mkdir -p logs static/audio transcripts static/media
 
 # Expose port
 EXPOSE 8000
