@@ -9,7 +9,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Literal
 
-import aiofiles
+try:
+    import aiofiles
+    AIOFILES_AVAILABLE = True
+except ImportError:
+    AIOFILES_AVAILABLE = False
+    print("Warning: aiofiles not available - audio file handling will be limited")
+
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -138,10 +144,10 @@ class ConversationState:
         self.conversation_history = []
         self.current_stage = "greeting"
         self.media_to_display = None
-        
-        # Create session in database
+        self.agent_asked_demo = False  # Track if agent asked for demo
+          # Create session in database
         db_manager.create_session(session_id, self.lead_info)
-
+    
     def update_lead_info(self, key, value):
         if key in self.lead_info:
             self.lead_info[key] = value
@@ -149,6 +155,13 @@ class ConversationState:
             db_manager.update_session(self.session_id, self.lead_info, self.current_stage)
             return True
         return False
+
+    def update_session_state(self, **kwargs):
+        """Update session state variables like demo tracking."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+                logger.info(f"Updated session state: {key} = {value}")
 
     def add_to_history(self, speaker, message):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -283,11 +296,11 @@ async def get_ai_response(conversation_state, user_input):
     """Get AI response using knowledge manager for intelligent conversation flow."""
     try:
         logger.info(f"Getting AI response for input: {user_input[:50]}...")
-        
-        # Get contextual response from knowledge manager
+          # Get contextual response from knowledge manager
         session_context = {
             "conversation_history": conversation_state.conversation_history,
-            "current_stage": conversation_state.current_stage
+            "current_stage": conversation_state.current_stage,
+            "agent_asked_demo": getattr(conversation_state, 'agent_asked_demo', False)
         }
         
         response_data = knowledge_manager.get_contextual_response(
@@ -295,18 +308,32 @@ async def get_ai_response(conversation_state, user_input):
             session_context, 
             conversation_state.lead_info
         )
+          # Check if agent will ask for demo in the next response
+        final_response = knowledge_manager.format_agent_response(response_data, user_input)
+        if final_response and ("would you like to see" in final_response.lower() or "demo" in final_response.lower()):
+            conversation_state.agent_asked_demo = True
+            logger.info("Agent asking for demo - setting flag to True")
         
         # Update lead info with extracted information
         if response_data.get("updated_lead_info"):
             for key, value in response_data["updated_lead_info"].items():
                 if key in conversation_state.lead_info and value:
                     conversation_state.update_lead_info(key, value)
-        
-        # Check for media recommendations
+          # Check for media recommendations or demo triggers
         media_suggestion = knowledge_manager.should_show_media(user_input, session_context)
-        if media_suggestion:
-            conversation_state.media_to_display = media_suggestion
-            logger.info(f"Media suggested: {media_suggestion}")
+        if media_suggestion or response_data.get("show_demo"):
+            if response_data.get("show_demo"):
+                conversation_state.media_to_display = {"type": "demo", "topic": "product_overview"}
+                logger.info("Demo triggered by user agreement")
+            else:
+                conversation_state.media_to_display = media_suggestion
+                logger.info(f"Media suggested: {conversation_state.media_to_display}")
+        
+        # Reset demo flag after showing demo
+        if response_data.get("show_demo"):
+            conversation_state.agent_asked_demo = False
+            conversation_state.update_session_state(agent_asked_demo=False)
+            logger.info("Demo shown - resetting agent_asked_demo flag")
         
         # Generate dynamic system prompt based on current context
         dynamic_prompt = knowledge_manager.generate_system_prompt(session_context, conversation_state.lead_info)
@@ -573,17 +600,33 @@ async def process_audio_message(session_id: str = Form(...), audio_file: UploadF
             content={"type": "error", "message": "Failed to process audio message"}
         )
 
+@app.get("/api/session/new")
+async def create_new_session():
+    """Generate a new unique session ID"""
+    try:
+        # Generate a unique session ID using UUID
+        new_session_id = f"session_{uuid.uuid4().hex[:12]}"
+        logger.info(f"Generated new session ID: {new_session_id}")
+        return JSONResponse(content={"session_id": new_session_id})
+    except Exception as e:
+        logger.error(f"Error generating new session ID: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to generate new session ID"}
+        )
+
 @app.get("/api/session/{session_id}/start")
-async def start_session(session_id: str):
+async def start_session(session_id: str, restore: bool = False):
     """Start a new session and return initial greeting"""
     try:
-        logger.info(f"Starting new session: {session_id}")
+        logger.info(f"Starting session: {session_id}, restore: {restore}")
         
         # Initialize conversation state
         if session_id not in active_connections:
             active_connections[session_id] = ConversationState(session_id)
-            # Try to load existing session data
-            active_connections[session_id].load_from_database()
+            # Only load existing session data if restore=True
+            if restore:
+                active_connections[session_id].load_from_database()
         
         conv_state = active_connections[session_id]
         
@@ -594,11 +637,11 @@ async def start_session(session_id: str):
         }
         
         # Use knowledge manager to generate appropriate greeting
-        if len(conv_state.conversation_history) == 0:
-            # First time greeting
+        if len(conv_state.conversation_history) == 0 or not restore:
+            # First time greeting for new sessions
             initial_greeting = "Hi there! I'm Jane, an AI Sales Development Representative for Willow AI. I'd love to learn more about your company and see how we might be able to help you. Could you start by telling me your name and what company you're with?"
         else:
-            # Returning session - generate contextual greeting
+            # Returning session - generate contextual greeting (only when restore=True)
             completion_percentage = knowledge_manager.calculate_completion_percentage(conv_state.lead_info)
             if completion_percentage < 50:
                 initial_greeting = "Welcome back! Let's continue where we left off. Could you tell me more about your company and what challenges you're facing?"
