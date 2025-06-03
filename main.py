@@ -21,6 +21,7 @@ import uvicorn
 import asyncio
 
 from database import DatabaseManager
+from knowledge_manager import KnowledgeManager
 
 # Load environment variables
 load_dotenv()
@@ -99,7 +100,8 @@ LOGS_DIR.mkdir(exist_ok=True)
 
 # Initialize database manager
 db_manager = DatabaseManager()
-logger.info("Database manager initialized")
+knowledge_manager = KnowledgeManager(db_manager)
+logger.info("Database manager and knowledge manager initialized")
 
 # Define message models for chat completion
 class MessageRole(BaseModel):
@@ -276,33 +278,75 @@ def transcribe_audio(audio_file_path):
             pass
         return None
 
-# Function to get AI response
+# Function to get AI response using knowledge manager
 async def get_ai_response(conversation_state, user_input):
-    """Get AI response from Groq LLM."""
+    """Get AI response using knowledge manager for intelligent conversation flow."""
     try:
         logger.info(f"Getting AI response for input: {user_input[:50]}...")
+        
+        # Get contextual response from knowledge manager
+        session_context = {
+            "conversation_history": conversation_state.conversation_history,
+            "current_stage": conversation_state.current_stage
+        }
+        
+        response_data = knowledge_manager.get_contextual_response(
+            user_input, 
+            session_context, 
+            conversation_state.lead_info
+        )
+        
+        # Update lead info with extracted information
+        if response_data.get("updated_lead_info"):
+            for key, value in response_data["updated_lead_info"].items():
+                if key in conversation_state.lead_info and value:
+                    conversation_state.update_lead_info(key, value)
+        
+        # Check for media recommendations
+        media_suggestion = knowledge_manager.should_show_media(user_input, session_context)
+        if media_suggestion:
+            conversation_state.media_to_display = media_suggestion
+            logger.info(f"Media suggested: {media_suggestion}")
+        
+        # Generate dynamic system prompt based on current context
+        dynamic_prompt = knowledge_manager.generate_system_prompt(session_context, conversation_state.lead_info)
+        
+        # Format the final response using knowledge manager
+        final_response = knowledge_manager.format_agent_response(response_data, user_input)
+        
+        # If we have a formatted response, use it directly
+        if final_response and final_response.strip():
+            logger.info(f"Knowledge manager response: {final_response[:100]}...")
+            return final_response
+        
+        # Fallback to AI generation with dynamic prompt
+        return await get_ai_response_with_prompt(conversation_state, user_input, dynamic_prompt)
+        
+    except Exception as e:
+        logger.error(f"Knowledge manager error: {str(e)}")
+        return await get_ai_response_fallback(conversation_state, user_input)
+
+# Fallback AI response function with dynamic prompt
+async def get_ai_response_with_prompt(conversation_state, user_input, system_prompt):
+    """Get AI response using dynamic system prompt."""
+    try:
         groq_api_key = os.getenv("GROQ_API_KEY")
         if not groq_api_key:
-            logger.error("GROQ_API_KEY not found in environment variables")
             return "I'm sorry, I'm having trouble connecting to my AI service. Please try again later."
 
-        # Create async client within the function
         async_client = AsyncGroq(api_key=groq_api_key)
         
-        # Create properly typed messages for the chat completion
         messages: List[Dict[str, str]] = [
-            {"role": "system", "content": SYSTEM_PROMPT}
+            {"role": "system", "content": system_prompt}
         ]
 
         # Add conversation history
-        for entry in conversation_state.conversation_history[-10:]:  # Include last 10 messages for context
+        for entry in conversation_state.conversation_history[-10:]:
             role = "assistant" if entry["speaker"] == "agent" else "user"
             messages.append({"role": role, "content": entry["message"]})
 
-        # Add current user input
         messages.append({"role": "user", "content": user_input})
 
-        # Get response from Groq
         chat_completion = await async_client.chat.completions.create(
             messages=messages,
             model="llama3-70b-8192",
@@ -312,212 +356,50 @@ async def get_ai_response(conversation_state, user_input):
         )
 
         response_text = chat_completion.choices[0].message.content
-        logger.info(f"AI response generated: {response_text[:100]}...")
-
-        # Check for media commands in the response
-        if '{"show_media":' in response_text:
-            try:
-                # Extract JSON command
-                start_idx = response_text.find('{"show_media":')
-                end_idx = response_text.find('}', start_idx) + 1
-                media_command = json.loads(response_text[start_idx:end_idx])                # Set media to display
-                conversation_state.media_to_display = {
-                    "type": media_command.get("show_media", "demo"),
-                    "topic": media_command.get("topic", "general")
-                }
-
-                # Remove JSON command from response
-                response_text = response_text[:start_idx].strip() + " " + response_text[end_idx:].strip()
-                logger.info(f"Media command extracted: {media_command}")
-            except Exception as e:
-                logger.warning(f"Failed to parse media command: {str(e)}")        # Update lead info based on AI response
-        update_lead_info_from_conversation(conversation_state, user_input, response_text)
-        
-        # Try AI extraction as fallback if pattern matching didn't find everything
-        await extract_lead_info_with_ai(conversation_state, user_input)
-
+        logger.info(f"AI response with dynamic prompt: {response_text[:100]}...")
         return response_text
+        
     except Exception as e:
-        logger.error(f"AI response error: {str(e)}")
+        logger.error(f"AI response with prompt error: {str(e)}")
         return "I'm sorry, I'm having trouble processing that. Could you please repeat?"
 
-# Function to update lead info based on conversation
-def update_lead_info_from_conversation(state, user_input, ai_response):
-    """Enhanced lead information extraction using AI-powered analysis."""
-    user_text = user_input.lower()
-    original_text = user_input  # Keep original case for proper names
-    
-    # Company name detection with improved patterns
-    if state.lead_info["company_name"] is None:
-        company_patterns = [
-            r"(?:work (?:for|at)|company (?:is|called|named)|at (?:a )?company called|employed (?:by|at)) ([A-Za-z][A-Za-z0-9\s&.-]{1,30})",
-            r"(?:i'm from|we're|company:?) ([A-Z][A-Za-z0-9\s&.-]{1,30})",
-            r"(?:my company|our company) (?:is )?([A-Z][A-Za-z0-9\s&.-]{1,30})",
-            r"([A-Z][A-Za-z0-9&.-]{2,20})(?: (?:inc|corp|llc|ltd|company|technologies|tech|solutions|systems))",
-        ]
-        
-        for pattern in company_patterns:
-            matches = re.findall(pattern, original_text, re.IGNORECASE)
-            if matches:
-                company_name = matches[0].strip()
-                # Filter out common false positives
-                false_positives = ["google", "linkedin", "facebook", "microsoft", "amazon", "apple", "the company", "my company", "our company"]
-                if company_name.lower() not in false_positives and len(company_name) > 2:
-                    state.update_lead_info("company_name", company_name.title())
-                    logger.info(f"Extracted company name: {company_name}")
-                    break
-
-    # Enhanced domain/industry detection
-    if state.lead_info["domain"] is None:
-        # Industry keywords with context
-        industry_keywords = {
-            "technology": ["tech", "software", "saas", "platform", "development", "programming", "coding", "app", "mobile", "web", "digital", "it", "information technology"],
-            "healthcare": ["healthcare", "medical", "hospital", "clinic", "pharmaceutical", "pharma", "biotech", "health", "medicine", "patient", "doctor"],
-            "finance": ["finance", "financial", "banking", "bank", "investment", "insurance", "trading", "accounting", "fintech"],
-            "education": ["education", "school", "university", "college", "learning", "training", "academic", "student", "teacher", "curriculum"],
-            "retail": ["retail", "ecommerce", "e-commerce", "store", "shopping", "consumer", "merchandise", "sales"],
-            "manufacturing": ["manufacturing", "factory", "production", "industrial", "automotive", "aerospace", "machinery"],
-            "marketing": ["marketing", "advertising", "branding", "agency", "digital marketing", "social media", "content"],
-            "consulting": ["consulting", "advisory", "professional services", "consulting firm"],
-            "real estate": ["real estate", "property", "housing", "construction", "development"],
-            "logistics": ["logistics", "shipping", "transportation", "supply chain", "delivery", "warehouse"],
-            "energy": ["energy", "utilities", "power", "renewable", "oil", "gas", "solar", "wind"],
-            "government": ["government", "public sector", "municipal", "federal", "state", "agency"]
-        }
-        
-        # Score each industry based on keyword matches
-        industry_scores = {}
-        for industry, keywords in industry_keywords.items():
-            score = sum(1 for keyword in keywords if keyword in user_text)
-            if score > 0:
-                industry_scores[industry] = score
-        
-        # Select industry with highest score
-        if industry_scores:
-            best_industry = max(industry_scores, key=industry_scores.get)
-            state.update_lead_info("domain", best_industry.title())
-            logger.info(f"Extracted domain: {best_industry}")
-
-    # Enhanced problem detection with context extraction
-    if state.lead_info["problem"] is None:
-        problem_patterns = [
-            r"(?:problem|challenge|issue|struggle|difficulty|pain point|trouble|concern)(?:\s+(?:is|we have|with|that))?\s+(.{10,100})",
-            r"(?:we need|looking for|trying to|want to|hoping to|need help with)\s+(.{10,100})",
-            r"(?:can't|cannot|unable to|struggling to|having trouble|difficult to)\s+(.{10,100})",
-            r"(?:improve|solve|fix|address|handle|deal with|overcome)\s+(.{10,100})",
-        ]
-        
-        for pattern in problem_patterns:
-            matches = re.findall(pattern, user_text, re.IGNORECASE)
-            if matches:
-                problem_text = matches[0].strip()
-                # Clean up the extracted text
-                problem_text = re.sub(r'\s+', ' ', problem_text)  # Remove extra whitespace
-                problem_text = problem_text.split('.')[0]  # Take first sentence
-                
-                if len(problem_text) > 10 and len(problem_text) < 200:
-                    state.update_lead_info("problem", problem_text.capitalize())
-                    logger.info(f"Extracted problem: {problem_text}")
-                    break
-
-    # Enhanced budget detection with better number parsing
-    if state.lead_info["budget"] is None:
-        budget_patterns = [
-            r"budget.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
-            r"(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?).*?budget",
-            r"spend.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
-            r"(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?).*?(?:per|each|every)\s+(?:month|year)",
-            r"around.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
-            r"approximately.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
-            r"up to.*?(\$[\d,]+(?:\.\d{2})?(?:\s*(?:k|thousand|m|million|b|billion))?)",
-            r"(\d+)(?:\s*(?:k|thousand|m|million|b|billion))?\s*(?:dollar|buck)",
-        ]
-        
-        for pattern in budget_patterns:
-            matches = re.findall(pattern, user_text, re.IGNORECASE)
-            if matches:
-                budget_text = matches[0]
-                # Normalize budget format
-                budget_text = budget_text.replace(',', '').strip()
-                if not budget_text.startswith('$'):
-                    budget_text = f"${budget_text}"
-                
-                state.update_lead_info("budget", budget_text)
-                logger.info(f"Extracted budget: {budget_text}")
-                break
-        
-        # Also check for budget ranges or qualitative descriptions
-        if state.lead_info["budget"] is None:
-            qualitative_budgets = {
-                "small": ["small", "limited", "tight", "minimal", "low"],
-                "medium": ["medium", "moderate", "reasonable", "standard"],
-                "large": ["large", "significant", "substantial", "big", "high"],
-                "enterprise": ["enterprise", "corporate", "unlimited", "flexible"]
-            }
-            
-            for category, keywords in qualitative_budgets.items():
-                if any(keyword in user_text for keyword in keywords):
-                    budget_context = [word for word in user_text.split() if any(bkw in word for bkw in ["budget", "spend", "cost", "price"])]
-                    if budget_context:
-                        state.update_lead_info("budget", f"{category.title()} budget range")
-                        logger.info(f"Extracted qualitative budget: {category}")
-                        break
-
-# AI-powered lead extraction fallback
-async def extract_lead_info_with_ai(conversation_state, user_input):
-    """Use AI to extract lead information when pattern matching fails."""
+# Original fallback function
+async def get_ai_response_fallback(conversation_state, user_input):
+    """Fallback AI response using original static prompt."""
     try:
-        # Only try AI extraction if we're missing critical information
-        missing_fields = [k for k, v in conversation_state.lead_info.items() if v is None]
-        if not missing_fields:
-            return
-            
         groq_api_key = os.getenv("GROQ_API_KEY")
         if not groq_api_key:
-            return
-            
+            return "I'm sorry, I'm having trouble connecting to my AI service. Please try again later."
+
         async_client = AsyncGroq(api_key=groq_api_key)
         
-        extraction_prompt = f"""
-Extract the following information from this conversation text. Return ONLY a JSON object with the requested fields. If information is not present, use null.
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": SYSTEM_PROMPT}
+        ]
 
-Fields to extract:
-- company_name: The name of the user's company/organization (if mentioned)
-- domain: The industry/business domain (technology, healthcare, finance, etc.)
-- problem: The main challenge or problem they're trying to solve
-- budget: Any budget information mentioned (keep original format)
+        for entry in conversation_state.conversation_history[-10:]:
+            role = "assistant" if entry["speaker"] == "agent" else "user"
+            messages.append({"role": role, "content": entry["message"]})
 
-Conversation text: "{user_input}"
+        messages.append({"role": "user", "content": user_input})
 
-Current missing fields: {missing_fields}
-
-Return format: {{"company_name": "value or null", "domain": "value or null", "problem": "value or null", "budget": "value or null"}}
-"""
-
-        response = await async_client.chat.completions.create(
-            messages=[{"role": "user", "content": extraction_prompt}],
+        chat_completion = await async_client.chat.completions.create(
+            messages=messages,
             model="llama3-70b-8192",
-            temperature=0.1,
-            max_tokens=150
+            temperature=0.7,
+            max_tokens=200,
+            top_p=0.9
         )
+
+        response_text = chat_completion.choices[0].message.content
+        return response_text
         
-        ai_response = response.choices[0].message.content.strip()
-        
-        # Try to parse JSON response
-        try:
-            extracted_data = json.loads(ai_response)
-            
-            # Update conversation state with extracted information
-            for field, value in extracted_data.items():
-                if field in conversation_state.lead_info and value and value != "null":
-                    if conversation_state.lead_info[field] is None:  # Only update if currently empty
-                        conversation_state.update_lead_info(field, value)
-                        logger.info(f"AI extracted {field}: {value}")
-                        
-        except json.JSONDecodeError:
-            logger.warning(f"Failed to parse AI extraction response: {ai_response}")
-            
-    except Exception as e:        logger.error(f"AI lead extraction error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Fallback AI response error: {str(e)}")
+        return "I'm sorry, I'm having trouble processing that. Could you please repeat?"
+
+# Legacy functions - kept for reference but no longer used
+# The knowledge manager now handles all lead information extraction
 
 # Function to convert text to speech using Groq
 def text_to_speech(text):
@@ -705,8 +587,24 @@ async def start_session(session_id: str):
         
         conv_state = active_connections[session_id]
         
-        # Send initial greeting
-        initial_greeting = "Hi there! I'm Jane, an AI Sales Development Representative. I'd like to learn more about your company and how we might be able to help you. Could you tell me the name of your company?"
+        # Generate dynamic initial greeting using knowledge manager
+        session_context = {
+            "conversation_history": conv_state.conversation_history,
+            "current_stage": conv_state.current_stage
+        }
+        
+        # Use knowledge manager to generate appropriate greeting
+        if len(conv_state.conversation_history) == 0:
+            # First time greeting
+            initial_greeting = "Hi there! I'm Jane, an AI Sales Development Representative for Willow AI. I'd love to learn more about your company and see how we might be able to help you. Could you start by telling me your name and what company you're with?"
+        else:
+            # Returning session - generate contextual greeting
+            completion_percentage = knowledge_manager.calculate_completion_percentage(conv_state.lead_info)
+            if completion_percentage < 50:
+                initial_greeting = "Welcome back! Let's continue where we left off. Could you tell me more about your company and what challenges you're facing?"
+            else:
+                initial_greeting = "Welcome back! I see we've gathered some information about your needs. Would you like to continue our conversation or see a demo of how Willow AI could help your team?"
+        
         conv_state.add_to_history("agent", initial_greeting)
         
         # Generate greeting audio
@@ -810,6 +708,108 @@ async def get_session_history(session_id: str, limit: int = 50):
         return JSONResponse(
             status_code=500,
             content={"error": "Failed to retrieve session history"}
+        )
+
+@app.get("/api/session/{session_id}/analytics")
+async def get_session_analytics(session_id: str):
+    """Get session analytics including persona detection, completion status, and recommendations"""
+    try:
+        if session_id not in active_connections:
+            # Try to load from database
+            conv_state = ConversationState(session_id)
+            if not conv_state.load_from_database():
+                raise HTTPException(status_code=404, detail="Session not found")
+            active_connections[session_id] = conv_state
+        
+        conv_state = active_connections[session_id]
+        
+        # Get latest user message for persona detection
+        latest_user_message = ""
+        for entry in reversed(conv_state.conversation_history):
+            if entry["speaker"] == "user":
+                latest_user_message = entry["message"]
+                break
+        
+        # Generate analytics using knowledge manager
+        session_context = {
+            "conversation_history": conv_state.conversation_history,
+            "current_stage": conv_state.current_stage
+        }
+        
+        analytics = {
+            "lead_completion": knowledge_manager.calculate_completion_percentage(conv_state.lead_info),
+            "persona": knowledge_manager.detect_persona(latest_user_message) if latest_user_message else "unknown",
+            "missing_info": knowledge_manager.get_missing_lead_info(conv_state.lead_info),
+            "conversation_length": len(conv_state.conversation_history),
+            "lead_info": conv_state.lead_info,
+            "recommended_next_questions": []
+        }
+        
+        # Get recommended next questions if qualification isn't complete
+        if analytics["lead_completion"] < 100:
+            analytics["recommended_next_questions"] = knowledge_manager.get_next_questions(
+                analytics["persona"], 
+                analytics["missing_info"]
+            )
+        
+        return JSONResponse(content=analytics)
+        
+    except Exception as e:
+        logger.error(f"Error getting analytics for {session_id}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve session analytics"}
+        )
+
+@app.get("/api/knowledge/search")
+async def search_knowledge_base(query: str, limit: int = 5):
+    """Search the knowledge base for relevant information"""
+    try:
+        results = db_manager.search_knowledge_base(query, limit)
+        return JSONResponse(content={"results": results})
+    except Exception as e:
+        logger.error(f"Error searching knowledge base: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to search knowledge base"}
+        )
+
+@app.get("/api/knowledge/questions/{persona}")
+async def get_qualification_questions(persona: str, category: str = None):
+    """Get qualification questions for a specific persona and category"""
+    try:
+        questions = db_manager.get_qualification_questions(persona, category)
+        return JSONResponse(content={"questions": questions})
+    except Exception as e:
+        logger.error(f"Error getting questions for persona {persona}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve qualification questions"}
+        )
+
+@app.get("/api/sessions/summary")
+async def get_all_sessions_summary():
+    """Get summary of all sessions for analytics dashboard"""
+    try:
+        # This would typically query the database for session summaries
+        # For now, return active session summaries
+        summaries = {}
+        for session_id, conv_state in active_connections.items():
+            completion = knowledge_manager.calculate_completion_percentage(conv_state.lead_info)
+            summaries[session_id] = {
+                "completion_percentage": completion,
+                "conversation_length": len(conv_state.conversation_history),
+                "lead_info": conv_state.lead_info,
+                "current_stage": conv_state.current_stage
+            }
+        
+        return JSONResponse(content={"sessions": summaries})
+        
+    except Exception as e:
+        logger.error(f"Error getting sessions summary: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve sessions summary"}
         )
 
 if __name__ == "__main__":
