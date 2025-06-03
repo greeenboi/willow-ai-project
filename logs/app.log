@@ -191,3 +191,82 @@ Before I do ...
 2025-06-03 07:21:52,826 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
 2025-06-03 07:21:54,457 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
 2025-06-03 07:21:54,459 - main - INFO - Session started for 08c2d9l761b3
+2025-06-03 16:34:08,067 - database - INFO - Turso database initialized successfully
+2025-06-03 16:34:08,069 - main - INFO - Database manager initialized
+2025-06-03 16:34:10,840 - main - INFO - Starting new session: iu0hn8y4bjp
+2025-06-03 16:34:12,482 - database - INFO - Created session: iu0hn8y4bjp
+2025-06-03 16:34:12,489 - main - INFO - Loaded session iu0hn8y4bjp from database with 0 messages
+2025-06-03 16:34:14,448 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 16:34:16,027 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 16:34:16,029 - main - INFO - Session started for iu0hn8y4bjp
+2025-06-03 16:34:16,109 - main - INFO - Starting new session: iu0hn8y4bjp
+2025-06-03 16:34:18,013 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 16:34:19,529 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 16:34:19,531 - main - INFO - Session started for iu0hn8y4bjp
+2025-06-03 16:35:09,303 - main - INFO - Processing audio message from iu0hn8y4bjp
+2025-06-03 16:35:09,317 - main - INFO - Starting audio transcription for file: static/audio/iu0hn8y4bjp_c1584431-4680-40bc-b1ea-a4ab7aeb5bb4.wav
+2025-06-03 16:35:11,464 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/audio/transcriptions "HTTP/1.1 400 Bad Request"
+2025-06-03 16:35:11,467 - main - ERROR - Error transcribing audio static/audio/iu0hn8y4bjp_c1584431-4680-40bc-b1ea-a4ab7aeb5bb4.wav: Error code: 400 - {'error': {'message': 'file is empty', 'type': 'invalid_request_error'}}
+2025-06-03 16:35:11,472 - main - ERROR - Failed to transcribe audio from iu0hn8y4bjp
+2025-06-03 16:37:22,896 - main - INFO - Processing text message from iu0hn8y4bjp: I currently Work at Langflow
+2025-06-03 16:37:36,598 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:37:36,599 - main - INFO - Getting AI response for input: I currently Work at Langflow...
+2025-06-03 16:37:37,779 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:37:37,793 - main - INFO - AI response generated: Nice to meet you! Langflow, that's a fascinating domain. I'm curious, what specific industry or sect...
+2025-06-03 16:37:37,873 - database - ERROR - Error retrieving session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:37:37,874 - main - INFO - Extracted company name: Langflow
+2025-06-03 16:37:38,344 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:37:38,346 - main - WARNING - Failed to parse AI extraction response: Here is the extracted information in JSON format:
+
+{"company_name": "Langflow", "domain": null, "problem": null, "budget": null}
+2025-06-03 16:37:38,608 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:37:38,609 - main - INFO - Starting TTS for text: Nice to meet you! Langflow, that's a fascinating d...
+2025-06-03 16:37:41,501 - main - INFO - TTS successful, generated 1228908 characters of base64 audio
+2025-06-03 16:37:41,503 - main - INFO - Sent text response to iu0hn8y4bjp
+2025-06-03 16:38:18,566 - main - INFO - Processing text message from iu0hn8y4bjp: It is a SAAS company in the AI sector
+2025-06-03 16:38:18,598 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:18,602 - main - INFO - Getting AI response for input: It is a SAAS company in the AI sector...
+2025-06-03 16:38:20,132 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:38:20,135 - main - INFO - AI response generated: That's really interesting! As an AI SaaS company, I'm sure you're no stranger to innovation and stay...
+2025-06-03 16:38:20,166 - database - ERROR - Error retrieving session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:20,166 - main - INFO - Extracted domain: technology
+2025-06-03 16:38:21,317 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:38:21,320 - main - WARNING - Failed to parse AI extraction response: Here is the extracted information in JSON format:
+
+{
+"company_name": null,
+"domain": "AI",
+"problem": null,
+"budget": null
+}
+2025-06-03 16:38:21,352 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:21,353 - main - INFO - Starting TTS for text: That's really interesting! As an AI SaaS company, ...
+2025-06-03 16:38:22,731 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-03 16:38:22,733 - main - INFO - Sent text response to iu0hn8y4bjp
+2025-06-03 16:38:57,068 - main - INFO - Processing text message from iu0hn8y4bjp: Well Currently we are trying to build an agent that uses mcp to help users understand and build agents on our platform with but a text prompt and a click
+2025-06-03 16:38:57,095 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:57,096 - main - INFO - Getting AI response for input: Well Currently we are trying to build an agent tha...
+2025-06-03 16:38:57,736 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:38:57,738 - main - INFO - AI response generated: That sounds like a game-changer! So, you're aiming to make it incredibly easy for users to create ag...
+2025-06-03 16:38:57,769 - database - ERROR - Error retrieving session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:57,769 - main - INFO - Extracted problem: build an agent that uses mcp to help users understand and build agents on our platform with but a te
+2025-06-03 16:38:58,153 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-03 16:38:58,156 - main - WARNING - Failed to parse AI extraction response: Here is the extracted information in JSON format:
+
+{
+"company_name": null",
+"domain": "build agents on our platform",
+"problem": "help users understand and build agents",
+"budget": null
+}
+2025-06-03 16:38:58,183 - database - ERROR - Error adding message to session iu0hn8y4bjp: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:38:58,184 - main - INFO - Starting TTS for text: That sounds like a game-changer! So, you're aiming...
+2025-06-03 16:39:00,190 - main - INFO - TTS successful, generated 2764908 characters of base64 audio
+2025-06-03 16:39:00,192 - main - INFO - Sent text response to iu0hn8y4bjp
+2025-06-03 16:39:11,323 - main - INFO - Starting new session: 607agh5kswj
+2025-06-03 16:39:11,351 - database - ERROR - Error creating session 607agh5kswj: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:39:11,379 - database - ERROR - Error retrieving session 607agh5kswj: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:39:11,409 - database - ERROR - Error adding message to session 607agh5kswj: Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: 62e148f6:01973579-8773-7a90-a614-6523ed80c070"}``
+2025-06-03 16:39:11,410 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-03 16:39:12,723 - main - INFO - TTS successful, generated 1548908 characters of base64 audio
+2025-06-03 16:39:12,725 - main - INFO - Session started for 607agh5kswj
