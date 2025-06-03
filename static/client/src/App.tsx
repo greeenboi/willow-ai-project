@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { Progress } from './components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
-import { Mic, Send, MicOff, User, Bot, Building, Globe, AlertCircle, DollarSign, CheckCircle2, Loader2 } from 'lucide-react';
+import { Mic, Send, MicOff, User, Bot, Building, Globe, AlertCircle, DollarSign, CheckCircle2, Loader2, Calendar } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { CalendarBooking } from './components/CalendarBooking';
 
 // Import demo assets
 import demoVideoUrl from './assets/demo_product_overview.mp4';
@@ -30,6 +31,13 @@ interface LeadInfo {
 interface Media {
   type: string;
   topic: string;
+}
+
+interface BookingData {
+  startTime: string;
+  endTime: string;
+  id: string;
+  attendees: Array<{ email: string; name: string }>;
 }
 
 // LeadInfoCard component for better lead info display
@@ -86,6 +94,8 @@ function App() {
   });
   const [currentMedia, setCurrentMedia] = useState<Media | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [meetingScheduled, setMeetingScheduled] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -188,6 +198,8 @@ function App() {
         budget: null,
       });
       setCurrentMedia(null);
+      setShowCalendarModal(false);
+      setMeetingScheduled(false);
       
       // Initialize new session (explicitly new, not restored)
       const response = await fetch(`${backend_url}/api/session/${sessionId.current}/start`);
@@ -290,6 +302,11 @@ function App() {
               };
               
               setMessages(prevMessages => [...prevMessages, agentMessage]);
+              
+              // Check if agent is offering to schedule a meeting
+              if (detectMeetingOffer(data.text)) {
+                setShowCalendarModal(true);
+              }
               
               // Play audio if available
               if (data.audio) {
@@ -431,6 +448,11 @@ function App() {
             
             setMessages(prevMessages => [...prevMessages, agentMessage]);
             
+            // Check if agent is offering to schedule a meeting
+            if (detectMeetingOffer(data.text)) {
+              setShowCalendarModal(true);
+            }
+            
             // Play audio if available
             if (data.audio) {
               playAudio(data.audio);
@@ -485,6 +507,42 @@ function App() {
 
   const getCompletionPercentage = () => {
     return (getFilledFieldsCount() / 4) * 100;
+  };
+
+  // Helper function to detect meeting offers in agent responses
+  const detectMeetingOffer = (text: string): boolean => {
+    const meetingKeywords = [
+      'schedule a meeting',
+      'book a call',
+      'set up a meeting',
+      'arrange a call',
+      'would you like to schedule',
+      'when would be a good time',
+      'book a demo',
+      'schedule a demo',
+      'calendar',
+      'availability',
+      'meeting time',
+      'call time'
+    ];
+    
+    return meetingKeywords.some(keyword => 
+      text.toLowerCase().includes(keyword.toLowerCase())
+    );
+  };
+
+  // Handle calendar booking completion
+  const handleBookingComplete = (bookingData: BookingData) => {
+    setShowCalendarModal(false);
+    setMeetingScheduled(true);
+    
+    // Add confirmation message to chat
+    const confirmationMessage: Message = {
+      text: `✅ Great! Your meeting has been scheduled for ${new Date(bookingData.startTime).toLocaleString()}. You'll receive a confirmation email shortly.`,
+      sender: 'agent',
+      timestamp: new Date().toISOString(),
+    };
+    setMessages(prevMessages => [...prevMessages, confirmationMessage]);
   };
 
   // Scroll to bottom when messages change
@@ -877,8 +935,27 @@ function App() {
 
                     {/* Action Buttons */}
                     {getCompletionPercentage() === 100 && (
-                      <div className="pt-4 border-t border-white/20">
-                        <Button className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0">
+                      <div className="pt-4 border-t border-white/20 space-y-3">
+                        {meetingScheduled ? (
+                          <div className="p-3 bg-green-500/20 border border-green-400/30 rounded-lg">
+                            <div className="flex items-center gap-2 text-green-300">
+                              <CheckCircle2 size={16} />
+                              <span className="font-medium text-sm">Meeting Scheduled!</span>
+                            </div>
+                            <p className="text-xs text-green-200 mt-1">
+                              Follow-up meeting has been booked successfully.
+                            </p>
+                          </div>
+                        ) : (
+                          <Button 
+                            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0"
+                            onClick={() => setShowCalendarModal(true)}
+                          >
+                            <Calendar size={16} className="mr-2" />
+                            Schedule Meeting
+                          </Button>
+                        )}
+                        <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0">
                           <CheckCircle2 size={16} className="mr-2" />
                           Mark as Qualified Lead
                         </Button>
@@ -891,6 +968,36 @@ function App() {
           </Card>
         </div>
       </div>
+
+      {/* Calendar Booking Modal */}
+      {showCalendarModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="text-blue-600" size={24} />
+                <h2 className="text-xl font-semibold text-gray-900">Schedule Your Meeting</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowCalendarModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="max-h-[calc(90vh-80px)] overflow-y-auto">
+              <CalendarBooking 
+                sessionId={sessionId.current}
+                leadInfo={leadInfo}
+                onBookingComplete={handleBookingComplete}
+                onClose={() => setShowCalendarModal(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
