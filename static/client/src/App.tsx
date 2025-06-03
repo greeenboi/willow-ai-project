@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -9,10 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { Mic, Send, MicOff, User, Bot, Building, Globe, AlertCircle, DollarSign, CheckCircle2, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 
+// Import demo assets
+import demoVideoUrl from './assets/demo_product_overview.mp4';
+import demoHtmlUrl from './assets/demo_product_overview.html?url';
+
 interface Message {
   text: string;
   sender: 'user' | 'agent';
   timestamp: string;
+  media?: Media; // Optional media content embedded in message
 }
 
 interface LeadInfo {
@@ -84,18 +89,41 @@ function App() {
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const sessionId = useRef(Math.random().toString(36).substring(2, 15));
+  const sessionId = useRef('');
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   const backend_url = import.meta.env.VITE_BACKEND_URL;
   console.log('Backend URL:', backend_url);
 
+  // Generate a new session ID
+  // biome-ignore lint/correctness/useExhaustiveDependencies: nah
+    const generateNewSessionId = useCallback(async (): Promise<string> => {
+    try {
+      const response = await fetch(`${backend_url}/api/session/new`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.session_id;
+      }
+      // Fallback to client-side generation if server endpoint fails
+      return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    } catch (error) {
+      console.error('Failed to generate session ID from server, using fallback:', error);
+      // Fallback to client-side generation
+      return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    }
+  }, [backend_url]);
+
   // Initialize session on component mount
   useEffect(() => {
     const initializeSession = async () => {
       try {
         setConnectionStatus('Connecting...');
+        
+        // Generate new session ID
+        sessionId.current = await generateNewSessionId();
+        console.log('New session ID:', sessionId.current);
+        
         const response = await fetch(`${backend_url}/api/session/${sessionId.current}/start`);
         
         if (response.ok) {
@@ -106,6 +134,7 @@ function App() {
               text: data.text,
               sender: 'agent',
               timestamp: new Date().toISOString(),
+              media: data.media // Include media in initial message if available
             };
             
             setMessages([newMessage]);
@@ -120,6 +149,11 @@ function App() {
             if (data.lead_info) {
               setLeadInfo(data.lead_info);
             }
+            
+            // Update media if available (for sidebar display)
+            if (data.media) {
+              setCurrentMedia(data.media);
+            }
           }
         } else {
           setConnectionStatus('Failed to connect');
@@ -132,7 +166,71 @@ function App() {
 
     initializeSession();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [generateNewSessionId]);
+
+  // Start a new session
+  const startNewSession = async () => {
+    try {
+      setConnectionStatus('Initializing...');
+      setIsLoading(true);
+      
+      // Generate new session ID
+      sessionId.current = await generateNewSessionId();
+      console.log('Starting new session with ID:', sessionId.current);
+      
+      // Clear current state
+      setMessages([]);
+      setInputMessage('');
+      setLeadInfo({
+        company_name: null,
+        domain: null,
+        problem: null,
+        budget: null,
+      });
+      setCurrentMedia(null);
+      
+      // Initialize new session (explicitly new, not restored)
+      const response = await fetch(`${backend_url}/api/session/${sessionId.current}/start`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.type === 'agent_response') {
+          const newMessage: Message = {
+            text: data.text,
+            sender: 'agent',
+            timestamp: new Date().toISOString(),
+            media: data.media
+          };
+          
+          setMessages([newMessage]);
+          setConnectionStatus('Ready');
+          
+          // Play initial greeting audio
+          if (data.audio) {
+            playAudio(data.audio);
+          }
+          
+          // Update lead info if available
+          if (data.lead_info) {
+            setLeadInfo(data.lead_info);
+          }
+          
+          // Update media if available
+          if (data.media) {
+            setCurrentMedia(data.media);
+          }
+        }
+      } else {
+        setConnectionStatus('Failed to connect');
+      }
+    } catch (error) {
+      console.error('Failed to start new session:', error);
+      setConnectionStatus('Connection error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Initialize microphone recording
   const initializeRecording = async () => {
@@ -188,6 +286,7 @@ function App() {
                 text: data.text,
                 sender: 'agent',
                 timestamp: new Date().toISOString(),
+                media: data.media // Include media in the message if available
               };
               
               setMessages(prevMessages => [...prevMessages, agentMessage]);
@@ -202,7 +301,7 @@ function App() {
                 setLeadInfo(data.lead_info);
               }
               
-              // Update media if available
+              // Update media if available (for sidebar display)
               if (data.media) {
                 setCurrentMedia(data.media);
               }
@@ -327,6 +426,7 @@ function App() {
               text: data.text,
               sender: 'agent',
               timestamp: new Date().toISOString(),
+              media: data.media // Include media in the message if available
             };
             
             setMessages(prevMessages => [...prevMessages, agentMessage]);
@@ -341,7 +441,7 @@ function App() {
               setLeadInfo(data.lead_info);
             }
             
-            // Update media if available
+            // Update media if available (for sidebar display)
             if (data.media) {
               setCurrentMedia(data.media);
             }
@@ -409,12 +509,28 @@ function App() {
     const { type, topic } = currentMedia;
 
     if (type === 'demo' || type === 'features') {
+      // Check if we have an HTML demo file
+      if (type === 'demo' && topic === 'product_overview') {
+        return (
+          <div className="flex flex-col">
+            <iframe 
+              src={demoHtmlUrl}
+              className="w-full h-96 rounded-md border border-white/20"
+              title="Willow AI Product Demo"
+              sandbox="allow-scripts allow-same-origin"
+            />
+            <h3 className="text-center mt-2 font-medium text-white">Willow AI Product Demo</h3>
+          </div>
+        );
+      }
+      
+      // Fallback to video for other demo types
       return (
         <div className="flex flex-col">
-          <video src={`/static/media/${type}_${topic || 'general'}.mp4`} controls className="max-w-full rounded-md">
+          <video src={demoVideoUrl} controls className="max-w-full rounded-md">
             <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
           </video>
-          <h3 className="text-center mt-2 font-medium">{topic ? `${type}: ${topic}` : type}</h3>
+          <h3 className="text-center mt-2 font-medium text-white">{topic ? `${type}: ${topic}` : type}</h3>
         </div>
       );
     } 
@@ -422,7 +538,54 @@ function App() {
       return (
         <div className="flex flex-col">
           <img src={`/static/media/${type}_${topic || 'general'}.jpg`} alt={`${type} information`} className="max-w-full rounded-md object-contain" />
-          <h3 className="text-center mt-2 font-medium">{topic ? `${type}: ${topic}` : type}</h3>
+          <h3 className="text-center mt-2 font-medium text-white">{topic ? `${type}: ${topic}` : type}</h3>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Render media content inline in chat messages
+  const renderInlineMedia = (media: Media) => {
+    const { type, topic } = media;
+
+    if (type === 'demo' && topic === 'product_overview') {
+      return (
+        <div className="mt-3 rounded-lg overflow-hidden border border-white/20">
+          <iframe 
+            src={demoHtmlUrl}
+            className="w-full h-80 border-0"
+            title="Willow AI Product Demo"
+            sandbox="allow-scripts allow-same-origin"
+          />
+        </div>
+      );
+    }
+
+    if (type === 'demo' || type === 'features') {
+      return (
+        <div className="mt-3 rounded-lg overflow-hidden">
+          <video 
+            src={demoVideoUrl} 
+            controls 
+            className="w-full rounded-lg"
+            poster="/static/media/video-placeholder.jpg"
+          >
+            <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
+          </video>
+        </div>
+      );
+    }
+
+    if (type === 'pricing' || type === 'testimonials') {
+      return (
+        <div className="mt-3 rounded-lg overflow-hidden">
+          <img 
+            src={`/static/media/${type}_${topic || 'general'}.jpg`} 
+            alt={`${type} information`} 
+            className="w-full rounded-lg object-cover"
+          />
         </div>
       );
     }
@@ -448,22 +611,35 @@ function App() {
             </div>
           </div>
           
-          {/* Connection Status */}
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${
-              connectionStatus === 'Ready' ? 'bg-green-400 animate-pulse' :
-              connectionStatus === 'Connecting...' ? 'bg-yellow-400 animate-pulse' :
-              connectionStatus === 'Initializing...' ? 'bg-blue-400 animate-pulse' :
-              'bg-red-400'
-            }`} />
-            <span className={`text-sm font-medium ${
-              connectionStatus === 'Ready' ? 'text-green-300' :
-              connectionStatus === 'Connecting...' ? 'text-yellow-300' :
-              connectionStatus === 'Initializing...' ? 'text-blue-300' :
-              'text-red-300'
-            }`}>
-              {connectionStatus}
-            </span>
+          {/* Actions and Connection Status */}
+          <div className="flex items-center gap-4">
+            {/* New Session Button */}
+            <Button 
+              onClick={startNewSession}
+              variant="outline"
+              size="sm"
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 transition-all"
+            >
+              New Session
+            </Button>
+            
+            {/* Connection Status */}
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                connectionStatus === 'Ready' ? 'bg-green-400 animate-pulse' :
+                connectionStatus === 'Connecting...' ? 'bg-yellow-400 animate-pulse' :
+                connectionStatus === 'Initializing...' ? 'bg-blue-400 animate-pulse' :
+                'bg-red-400'
+              }`} />
+              <span className={`text-sm font-medium ${
+                connectionStatus === 'Ready' ? 'text-green-300' :
+                connectionStatus === 'Connecting...' ? 'text-yellow-300' :
+                connectionStatus === 'Initializing...' ? 'text-blue-300' :
+                'text-red-300'
+              }`}>
+                {connectionStatus}
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -492,6 +668,8 @@ function App() {
                           : 'bg-white/80 backdrop-blur-sm border border-white/20 text-gray-800 rounded-bl-md'
                       }`}>
                         <p className="text-sm leading-relaxed">{message.text}</p>
+                        {/* Render inline media if present */}
+                        {message.media && message.sender === 'agent' && renderInlineMedia(message.media)}
                       </div>
                       <span className="text-xs text-white/60 mt-1 px-2">
                         {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
