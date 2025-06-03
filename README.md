@@ -14,6 +14,9 @@ pip install fastapi uvicorn groq python-dotenv aiofiles pydantic requests libsql
 python main.py
 ```
 
+### Option 3: Production
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=willow-ai-project&type=docker&image=ghcr.io%2Fgreeenboi%2Fwillow-ai-project%3Alatest&instance_type=free&regions=was&instances_min=0&autoscaling_sleep_idle_delay=300&env%5BGROQ_API_KEY%5D=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&env%5BTURSO_DATABASE_URL%5D=libsql%3A%2F%2Fwillow-ai-project-greeenboi.aws-ap-south-1.turso.io&env%5BTURSO_AUTH_TOKEN%5D=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NDg4ODg4NjAsImlkIjoiYTMwYzYyNDItYTAxYi00ZWRiLTk0NjktZjBjMzg3ODc1YzhhIiwicmlkIjoiZDhjYTY5YjEtYTQyZC00Mzk1LTgzZjktZWRlYzI2ZTIwZmI4In0.Um0VQSfKjRNOR2-7kbCGIElkL40GDhI0lcUavVgbqFaC3hlr41RF-ZP7vrABbaAOPnY3CwdEDT_bTbB4djHbAA&env%5BVERCEL_DOMAIN%5D=https%3A%2F%2Fwillow-project.vercel.app%2F&env%5BALLOW_ALL_ORIGINS%5D=true&env%5BPRODUCTION_DOMAIN%5D=https%3A%2F%2Fwillow-project.vercel.app%2F&env%5BPORT%5D=8000&hc_protocol%5B8000%5D=http&hc_path%5B8000%5D=%2Fhealth)
+
 ## 🌐 Access the Application
 
 Once running, the AI voice agent will be available at:
