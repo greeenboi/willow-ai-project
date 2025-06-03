@@ -88,12 +88,14 @@ function App() {
   const sessionId = useRef(Math.random().toString(36).substring(2, 15));
   const chatMessagesRef = useRef<HTMLDivElement>(null);
 
+  const backend_url = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
   // Initialize session on component mount
   useEffect(() => {
     const initializeSession = async () => {
       try {
         setConnectionStatus('Connecting...');
-        const response = await fetch(`http://localhost:8000/api/session/${sessionId.current}/start`);
+        const response = await fetch(`${backend_url}/api/session/${sessionId.current}/start`);
         
         if (response.ok) {
           const data = await response.json();
@@ -158,7 +160,7 @@ function App() {
           };
           setMessages(prevMessages => [...prevMessages, newMessage]);
 
-          const response = await fetch('http://localhost:8000/api/chat/audio', {
+          const response = await fetch(`${backend_url}/api/chat/audio`, {
             method: 'POST',
             body: formData,
           });
@@ -257,7 +259,7 @@ function App() {
         setInputMessage('');
 
         // Send message to HTTP endpoint
-        const response = await fetch('http://localhost:8000/api/chat/text', {
+        const response = await fetch(`${backend_url}/api/chat/text`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
