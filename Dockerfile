@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy only backend files (excluding frontend)
 COPY main.py .
 COPY database.py .
+COPY knowledge_manager.py .
 
 # Copy .env if it exists (optional for local builds, not needed in production)
 COPY .env* ./
