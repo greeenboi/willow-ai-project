@@ -302,15 +302,20 @@ async def get_ai_response(conversation_state, user_input):
             "current_stage": conversation_state.current_stage,
             "agent_asked_demo": getattr(conversation_state, 'agent_asked_demo', False)
         }
-        
         response_data = knowledge_manager.get_contextual_response(
             user_input, 
             session_context, 
             conversation_state.lead_info
         )
-          # Check if agent will ask for demo in the next response
+        
+        # Handle demo offer flag - agent will ask for demo in response
+        if response_data.get("agent_will_ask_demo"):
+            conversation_state.agent_asked_demo = True
+            logger.info("Agent offering demo - setting flag to True")
+        
+        # Check if agent will ask for demo in the next response (fallback)
         final_response = knowledge_manager.format_agent_response(response_data, user_input)
-        if final_response and ("would you like to see" in final_response.lower() or "demo" in final_response.lower()):
+        if final_response and ("would you like to see" in final_response.lower() or ("demo" in final_response.lower() and "?" in final_response)):
             conversation_state.agent_asked_demo = True
             logger.info("Agent asking for demo - setting flag to True")
         
@@ -319,11 +324,13 @@ async def get_ai_response(conversation_state, user_input):
             for key, value in response_data["updated_lead_info"].items():
                 if key in conversation_state.lead_info and value:
                     conversation_state.update_lead_info(key, value)
-          # Check for media recommendations or demo triggers
+            # Check for media recommendations or demo triggers
         media_suggestion = knowledge_manager.should_show_media(user_input, session_context)
         if media_suggestion or response_data.get("show_demo"):
             if response_data.get("show_demo"):
                 conversation_state.media_to_display = {"type": "demo", "topic": "product_overview"}
+                # Set demo_shown flag in lead_info for future meeting offers
+                conversation_state.update_lead_info("demo_shown", True)
                 logger.info("Demo triggered by user agreement")
             else:
                 conversation_state.media_to_display = media_suggestion
@@ -853,6 +860,209 @@ async def get_all_sessions_summary():
         return JSONResponse(
             status_code=500,
             content={"error": "Failed to retrieve sessions summary"}
+        )
+
+# Cal.com API configuration
+CAL_COM_API_KEY = os.getenv("CAL_COM_API_KEY")
+CAL_COM_BASE_URL = os.getenv("CAL_COM_BASE_URL", "https://api.cal.com/v1")
+CAL_COM_EVENT_TYPE_ID = os.getenv("CAL_COM_EVENT_TYPE_ID")  # Your event type ID
+
+@app.get("/api/calendar/availability")
+async def get_calendar_availability(date: str = None):
+    """Get available time slots for meeting booking"""
+    try:
+        if not CAL_COM_API_KEY or not CAL_COM_EVENT_TYPE_ID:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Cal.com configuration missing"}
+            )
+        
+        # Default to today if no date provided
+        if not date:
+            date = datetime.now().strftime("%Y-%m-%d")
+        
+        headers = {
+            "Authorization": f"Bearer {CAL_COM_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        # Get availability for the specified date
+        url = f"{CAL_COM_BASE_URL}/availability"
+        params = {
+            "eventTypeId": CAL_COM_EVENT_TYPE_ID,
+            "dateFrom": date,
+            "dateTo": date
+        }
+        
+        response = requests.get(url, headers=headers, params=params)
+        
+        if response.status_code == 200:
+            availability_data = response.json()
+            
+            # Transform the data to a more user-friendly format
+            slots = []
+            if "available" in availability_data:
+                for slot in availability_data["available"]:
+                    slots.append({
+                        "time": slot["start"],
+                        "duration": slot.get("duration", 30),  # Default 30 min
+                        "available": True
+                    })
+            
+            return JSONResponse(content={
+                "date": date,
+                "slots": slots,
+                "timezone": availability_data.get("timezone", "UTC")
+            })
+        else:
+            logger.error(f"Cal.com API error: {response.status_code} - {response.text}")
+            return JSONResponse(
+                status_code=response.status_code,
+                content={"error": "Failed to fetch availability"}
+            )
+            
+    except Exception as e:
+        logger.error(f"Error fetching calendar availability: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to fetch availability"}
+        )
+
+@app.post("/api/calendar/book")
+async def book_meeting(request: Request):
+    """Book a meeting via Cal.com API"""
+    try:
+        if not CAL_COM_API_KEY or not CAL_COM_EVENT_TYPE_ID:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Cal.com configuration missing"}
+            )
+        
+        booking_data = await request.json()
+        
+        # Validate required fields
+        required_fields = ["session_id", "name", "email", "start_time"]
+        for field in required_fields:
+            if field not in booking_data:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": f"Missing required field: {field}"}
+                )
+        
+        headers = {
+            "Authorization": f"Bearer {CAL_COM_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        # Prepare booking data for Cal.com
+        cal_booking_data = {
+            "eventTypeId": int(CAL_COM_EVENT_TYPE_ID),
+            "start": booking_data["start_time"],
+            "responses": {
+                "name": booking_data["name"],
+                "email": booking_data["email"],
+                "notes": booking_data.get("notes", "Meeting booked via Willow AI")
+            },
+            "metadata": {
+                "session_id": booking_data["session_id"],
+                "source": "willow_ai"
+            }
+        }
+        
+        # Add custom questions if provided
+        if "company" in booking_data:
+            cal_booking_data["responses"]["company"] = booking_data["company"]
+        
+        if "phone" in booking_data:
+            cal_booking_data["responses"]["phone"] = booking_data["phone"]
+        
+        # Make booking request to Cal.com
+        url = f"{CAL_COM_BASE_URL}/bookings"
+        response = requests.post(url, headers=headers, json=cal_booking_data)
+        
+        if response.status_code == 201:
+            booking_response = response.json()
+            
+            # Update session with meeting booking info
+            session_id = booking_data["session_id"]
+            if session_id in active_connections:
+                conv_state = active_connections[session_id]
+                
+                # Add meeting info to lead data
+                conv_state.lead_info["meeting_booked"] = True
+                conv_state.lead_info["meeting_id"] = booking_response.get("id")
+                conv_state.lead_info["meeting_time"] = booking_data["start_time"]
+                conv_state.lead_info["attendee_email"] = booking_data["email"]
+                conv_state.lead_info["attendee_name"] = booking_data["name"]
+                
+                # Save to database
+                try:
+                    db_manager.update_session_data(
+                        session_id, 
+                        conv_state.lead_info, 
+                        conv_state.conversation_history,
+                        completion_percentage=knowledge_manager.calculate_completion_percentage(conv_state.lead_info),
+                        current_stage="meeting_booked"
+                    )
+                except Exception as db_error:
+                    logger.error(f"Failed to update database after booking: {str(db_error)}")
+            
+            return JSONResponse(content={
+                "success": True,
+                "booking_id": booking_response.get("id"),
+                "booking_url": booking_response.get("url"),
+                "meeting_time": booking_data["start_time"],
+                "message": "Meeting successfully booked! You'll receive a confirmation email shortly."
+            })
+        else:
+            logger.error(f"Cal.com booking error: {response.status_code} - {response.text}")
+            return JSONResponse(
+                status_code=response.status_code,
+                content={"error": "Failed to book meeting"}
+            )
+            
+    except Exception as e:
+        logger.error(f"Error booking meeting: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to book meeting"}
+        )
+
+@app.get("/api/calendar/meetings/{session_id}")
+async def get_session_meetings(session_id: str):
+    """Get meetings booked for a specific session"""
+    try:
+        if session_id in active_connections:
+            conv_state = active_connections[session_id]
+            meeting_info = {
+                "has_meeting": conv_state.lead_info.get("meeting_booked", False),
+                "meeting_id": conv_state.lead_info.get("meeting_id"),
+                "meeting_time": conv_state.lead_info.get("meeting_time"),
+                "attendee_email": conv_state.lead_info.get("attendee_email"),
+                "attendee_name": conv_state.lead_info.get("attendee_name")
+            }
+            return JSONResponse(content=meeting_info)
+        else:
+            # Try to get from database
+            session_data = db_manager.get_session_data(session_id)
+            if session_data:
+                lead_info = json.loads(session_data[2]) if session_data[2] else {}
+                meeting_info = {
+                    "has_meeting": lead_info.get("meeting_booked", False),
+                    "meeting_id": lead_info.get("meeting_id"),
+                    "meeting_time": lead_info.get("meeting_time"),
+                    "attendee_email": lead_info.get("attendee_email"),
+                    "attendee_name": lead_info.get("attendee_name")
+                }
+                return JSONResponse(content=meeting_info)
+            else:
+                raise HTTPException(status_code=404, detail="Session not found")
+                
+    except Exception as e:
+        logger.error(f"Error getting session meetings: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve meeting information"}
         )
 
 if __name__ == "__main__":

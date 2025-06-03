@@ -98,10 +98,30 @@ class KnowledgeManager:
         
         meeting_indicators = [
             "meeting", "call", "schedule", "book", "talk to", "speak with",
-            "next step", "move forward", "interested", "good fit"
+            "next step", "move forward", "interested", "good fit", "demo was great",
+            "looks good", "this could work", "let's proceed", "sounds perfect",
+            "exactly what we need", "when can we start", "pricing looks good"
         ]
-          # Only suggest meeting if lead is well qualified (>75% complete)
-        return completion > 75 and any(indicator in text_lower for indicator in meeting_indicators)
+        
+        # Check if demo was completed successfully
+        demo_completed = self.check_demo_completion(text, lead_info)
+        
+        # Only suggest meeting if lead is well qualified (>75% complete) AND demo was shown
+        return (completion > 75 and 
+                any(indicator in text_lower for indicator in meeting_indicators) and
+                (demo_completed or lead_info.get("demo_shown", False)))
+
+    def check_demo_completion(self, text: str, lead_info: Dict) -> bool:
+        """Check if user has seen and responded positively to demo"""
+        text_lower = text.lower()
+        
+        positive_demo_responses = [
+            "demo was great", "looks good", "impressive", "exactly what we need",
+            "this could work", "looks perfect", "very interesting", "this is helpful",
+            "i like it", "looks promising", "this would work", "perfect solution"
+        ]
+        
+        return any(response in text_lower for response in positive_demo_responses)
 
     def detect_intent(self, text: str) -> str:
         """Detect the intent behind the prospect's message."""
@@ -200,6 +220,7 @@ class KnowledgeManager:
                     return range_name
         
         return None
+    
     def get_contextual_response(self, user_message: str, session_context: Dict, lead_info: Dict) -> Dict:
         """Generate a contextual response based on user message and session context."""
         persona = self.detect_persona(user_message)
@@ -231,7 +252,26 @@ class KnowledgeManager:
                 "updated_lead_info": lead_info
             }
         
-        # Check for meeting readiness after demo
+        # Check if we should offer a demo (new logic)
+        if self.should_offer_demo(user_message, session_context):
+            # Return demo offer message but don't show video yet
+            return {
+                "demo_offer": "That's great to hear! I'd love to show you exactly how Willow AI works. Would you like to see a quick product demo? It's just a 2-minute walkthrough of how we engage and qualify leads.",
+                "persona": persona,
+                "intent": "demo_offer",
+                "updated_lead_info": lead_info,
+                "agent_will_ask_demo": True  # Flag to set agent_asked_demo = True
+            }
+          # Check if we should offer a meeting with AE
+        if self.should_offer_meeting(user_message, lead_info):
+            return {
+                "meeting_offer": "I'm so glad you found the demo helpful! It sounds like Willow AI could be a great fit for your team. I'd love to set up a customized strategy call with John, our account executive, who can walk you through exactly how this would work for your specific use case and discuss implementation. Would you like to schedule a 30-minute call this week?",
+                "persona": persona,
+                "intent": "meeting_offer",
+                "updated_lead_info": lead_info
+            }
+        
+        # Check for meeting readiness after demo (fallback)
         if completion >= 75 and self.detect_meeting_readiness(user_message, lead_info):
             return {
                 "meeting_response": "Excellent! It sounds like Willow AI could be a great fit for your team. I'd love to set up a customized demo call with John, our account executive, who can walk you through exactly how this would work for your specific use case. Would you mind sharing your availability this week?",
@@ -366,6 +406,59 @@ CURRENT SESSION STATUS:
         required_fields = ["company_name", "domain", "problem", "budget"]
         completed = sum(1 for field in required_fields if lead_info.get(field))
         return int((completed / len(required_fields)) * 100)
+    
+    def should_offer_demo(self, user_message: str, session_context: Dict) -> bool:
+        """Determine if the agent should offer to show a demo based on user interest."""
+        text_lower = user_message.lower()
+        
+        # Don't offer demo if we already asked for one recently
+        agent_asked_demo = session_context.get("agent_asked_demo", False)
+        if agent_asked_demo:
+            return False
+        
+        # Keywords that indicate demo interest
+        demo_interest_indicators = [
+            "demo", "show me", "see it", "walkthrough", "preview", 
+            "demonstration", "how it works", "see how", "product tour",
+            "can you show", "i'd like to see", "want to see"
+        ]
+        
+        return any(indicator in text_lower for indicator in demo_interest_indicators)
+    
+    def should_offer_meeting(self, user_message: str, lead_info: Dict) -> bool:
+        """Determine if the agent should proactively offer a meeting based on user interest and lead qualification."""
+        text_lower = user_message.lower()
+        completion = self.calculate_completion_percentage(lead_info)
+        
+        # Meeting interest indicators
+        meeting_interest_keywords = [
+            "next step", "move forward", "interested", "good fit", "demo was great",
+            "looks good", "this could work", "let's proceed", "sounds perfect",
+            "exactly what we need", "when can we start", "pricing looks good",
+            "this is helpful", "i like it", "looks promising", "perfect solution",
+            "very interesting", "impressive", "sounds great", "this would work"
+        ]
+        
+        # Demo completion indicators (positive response to demo)
+        demo_completion_keywords = [
+            "demo was", "after watching", "after seeing", "that demo", "the video",
+            "the demonstration", "what i saw", "looks like", "seems like"
+        ]
+        
+        # Check if user showed positive response to demo content
+        has_demo_interest = any(keyword in text_lower for keyword in demo_completion_keywords)
+        has_meeting_interest = any(keyword in text_lower for keyword in meeting_interest_keywords)
+        
+        # Offer meeting if:
+        # 1. Lead is well qualified (>75% complete)
+        # 2. User showed positive interest in demo or mentioned meeting-related keywords
+        # 3. Demo was likely shown (check if demo_shown flag exists)
+        demo_shown = lead_info.get("demo_shown", False)
+        
+        return (completion > 75 and 
+                (has_meeting_interest or has_demo_interest) and
+                demo_shown)
+
     def should_show_media(self, user_message: str, session_context: Dict) -> Optional[Dict]:
         """Determine if media should be shown based on the conversation context."""
         text_lower = user_message.lower()
@@ -377,12 +470,9 @@ CURRENT SESSION STATUS:
         if agent_asked_demo and any(keyword in text_lower for keyword in demo_interest_keywords):
             return {"type": "demo", "topic": "product_overview"}
         
-        # Media trigger keywords
+        # Media trigger keywords (removed automatic demo triggers)
         media_triggers = {
-            "demo": {"type": "demo", "topic": "product_overview"},
-            "show me": {"type": "demo", "topic": "product_overview"},
             "features": {"type": "features", "topic": "core_features"},
-            "how it works": {"type": "demo", "topic": "how_it_works"},
             "pricing": {"type": "pricing", "topic": "pricing_overview"},
             "testimonials": {"type": "testimonials", "topic": "customer_success"},
             "case study": {"type": "testimonials", "topic": "case_studies"},
@@ -395,12 +485,17 @@ CURRENT SESSION STATUS:
                 return media_info
         
         return None
+    
     def format_agent_response(self, response_data: Dict, user_message: str) -> str:
         """Format the final agent response based on all the context."""
         
         # Handle objections first
         if response_data.get("objection_response"):
             return response_data["objection_response"]
+        
+        # Handle demo offer (new separate message)
+        if response_data.get("demo_offer"):
+            return response_data["demo_offer"]
         
         # Handle demo responses
         if response_data.get("demo_response"):
