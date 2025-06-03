@@ -18,14 +18,35 @@ class KnowledgeManager:
             "marketing_leader": ["cmo", "marketing", "demand gen", "growth", "pmm", "product marketing"],
             "plg_founder": ["founder", "ceo", "plg", "product-led", "self-serve", "freemium"]
         }
-        
-        # Intent detection patterns
+          # Intent detection patterns
         self.intent_patterns = {
             "product_question": ["how does", "what is", "can you", "do you", "features", "capabilities"],
             "pricing_question": ["cost", "price", "pricing", "budget", "expensive", "cheap"],
-            "objection": ["but", "however", "already have", "don't need", "not interested", "too expensive"],
+            "objection": ["but", "however", "already have", "don't need", "not interested", "too expensive", "concerns", "worried"],
             "interest": ["interested", "tell me more", "sounds good", "like that", "demo", "meeting"],
+            "demo_request": ["demo", "show me", "see it", "preview", "walkthrough", "demonstration"],
+            "demo_agreement": ["yes", "sure", "okay", "alright", "sounds good", "let's do it", "show me"],
+            "meeting_interest": ["meeting", "call", "schedule", "book", "talk to", "speak with"],
             "qualification_info": ["we use", "our company", "we have", "currently", "right now"]
+        }
+        
+        # Common objections and responses
+        self.objection_responses = {
+            "already_have_chatbot": "That's great! Unlike traditional chatbots, Willow AI doesn't just collect emails—it actually talks to leads, qualifies them like an SDR, and schedules meetings automatically. Have you seen gaps in your current chatbot where leads still fall through?",
+            
+            "prefer_human_sdrs": "Willow AI isn't replacing SDRs—it's making them more efficient. Instead of spending time on repetitive qualification, your reps can focus on closing high-intent leads.",
+            
+            "need_personal_touch": "That's exactly why we designed Willow AI to sound human-like and handle objections dynamically. It's trained on sales conversations, so it engages naturally, just like your best SDR would.",
+            
+            "ai_mistakes": "You define the qualification criteria, and Willow AI follows those rules. It can even flag leads for manual review if they need further evaluation.",
+            
+            "no_budget": "I understand! Many of our customers see a fast ROI because Willow AI increases inbound conversion rates and reduces SDR workload. Would it make sense to explore a pilot program to see the impact firsthand?",
+            
+            "too_expensive": "I understand cost is a concern. Willow AI typically pays for itself within the first month by converting more leads and reducing SDR overhead. Would you like to see how the ROI works for companies similar to yours?",
+            
+            "not_ready": "That makes sense. When would be a better time to revisit this? I can also send you some case studies showing how companies like yours have benefited from Willow AI.",
+            
+            "need_approval": "Absolutely, that's common for decisions like this. Would it help if I scheduled a quick demo with your team so everyone can see how Willow AI works? This way you'll have all the information needed for the discussion."
         }
     
     def detect_persona(self, text: str) -> str:
@@ -38,7 +59,50 @@ class KnowledgeManager:
                     return persona
         
         return "general"
-    
+    def detect_objection(self, text: str) -> Optional[str]:
+        """Detect specific objections in the user's message."""
+        text_lower = text.lower()
+        
+        objection_patterns = {
+            "already_have_chatbot": ["already have", "using drift", "using intercom", "have a chatbot", "current chatbot"],
+            "prefer_human_sdrs": ["prefer human", "human touch", "real person", "not ai", "human sdrs"],
+            "need_personal_touch": ["personal touch", "personalized", "human interaction", "real conversation"],
+            "ai_mistakes": ["ai mistakes", "errors", "wrong information", "inaccurate", "trust ai"],
+            "no_budget": ["no budget", "can't afford", "too expensive", "budget constraints", "tight budget"],
+            "too_expensive": ["expensive", "costly", "price", "cost too much", "cheaper option"],
+            "not_ready": ["not ready", "timing", "maybe later", "not right now", "future"],
+            "need_approval": ["need approval", "talk to team", "discuss internally", "get buy-in", "check with"]
+        }
+        
+        for objection_type, patterns in objection_patterns.items():
+            for pattern in patterns:
+                if pattern in text_lower:
+                    return objection_type
+        
+        return None
+
+    def detect_demo_interest(self, text: str) -> bool:
+        """Detect if the user is interested in seeing a demo."""
+        text_lower = text.lower()
+        demo_indicators = [
+            "yes", "sure", "okay", "alright", "sounds good", "let's do it", 
+            "show me", "i'd like to see", "demo", "walkthrough", "preview"
+        ]
+        
+        return any(indicator in text_lower for indicator in demo_indicators)
+
+    def detect_meeting_readiness(self, text: str, lead_info: Dict) -> bool:
+        """Detect if the prospect is ready for a meeting."""
+        completion = self.calculate_completion_percentage(lead_info)
+        text_lower = text.lower()
+        
+        meeting_indicators = [
+            "meeting", "call", "schedule", "book", "talk to", "speak with",
+            "next step", "move forward", "interested", "good fit"
+        ]
+          # Only suggest meeting if lead is well qualified (>75% complete)
+        return completion > 75 and any(indicator in text_lower for indicator in meeting_indicators)
+
     def detect_intent(self, text: str) -> str:
         """Detect the intent behind the prospect's message."""
         text_lower = text.lower()
@@ -136,11 +200,45 @@ class KnowledgeManager:
                     return range_name
         
         return None
-    
     def get_contextual_response(self, user_message: str, session_context: Dict, lead_info: Dict) -> Dict:
         """Generate a contextual response based on user message and session context."""
         persona = self.detect_persona(user_message)
         intent = self.detect_intent(user_message)
+        
+        # Check for objections first
+        objection_type = self.detect_objection(user_message)
+        if objection_type and objection_type in self.objection_responses:
+            return {
+                "objection_response": self.objection_responses[objection_type],
+                "persona": persona,
+                "intent": "objection_handling",
+                "updated_lead_info": lead_info
+            }
+        
+        # Check for demo interest
+        completion = self.calculate_completion_percentage(lead_info)
+        demo_interest = self.detect_demo_interest(user_message)
+        agent_asked_demo = session_context.get("agent_asked_demo", False)
+        
+        if agent_asked_demo and demo_interest:
+            # User agreed to see demo - this will trigger video display via should_show_media
+            return {
+                "demo_response": "Perfect! Here's a quick overview of how Willow AI works in action. This demo shows how Willow AI engages with prospects, qualifies them, and books meetings automatically.",
+                "follow_up": "After you've had a chance to see this, I'd love to hear your thoughts. Do you feel like this could be a good fit for your team?",
+                "persona": persona,
+                "intent": "demo_viewing",
+                "show_demo": True,
+                "updated_lead_info": lead_info
+            }
+        
+        # Check for meeting readiness after demo
+        if completion >= 75 and self.detect_meeting_readiness(user_message, lead_info):
+            return {
+                "meeting_response": "Excellent! It sounds like Willow AI could be a great fit for your team. I'd love to set up a customized demo call with John, our account executive, who can walk you through exactly how this would work for your specific use case. Would you mind sharing your availability this week?",
+                "persona": persona,
+                "intent": "meeting_booking",
+                "updated_lead_info": lead_info
+            }
         
         # Extract new information
         company_info = self.extract_company_info(user_message)
@@ -268,14 +366,21 @@ CURRENT SESSION STATUS:
         required_fields = ["company_name", "domain", "problem", "budget"]
         completed = sum(1 for field in required_fields if lead_info.get(field))
         return int((completed / len(required_fields)) * 100)
-    
     def should_show_media(self, user_message: str, session_context: Dict) -> Optional[Dict]:
         """Determine if media should be shown based on the conversation context."""
         text_lower = user_message.lower()
         
+        # Check for demo agreement/interest after agent asked for demo
+        demo_interest_keywords = ["yes", "sure", "okay", "alright", "sounds good", "let's do it", "show me"]
+        agent_asked_demo = session_context.get("agent_asked_demo", False)
+        
+        if agent_asked_demo and any(keyword in text_lower for keyword in demo_interest_keywords):
+            return {"type": "demo", "topic": "product_overview"}
+        
         # Media trigger keywords
         media_triggers = {
             "demo": {"type": "demo", "topic": "product_overview"},
+            "show me": {"type": "demo", "topic": "product_overview"},
             "features": {"type": "features", "topic": "core_features"},
             "how it works": {"type": "demo", "topic": "how_it_works"},
             "pricing": {"type": "pricing", "topic": "pricing_overview"},
@@ -290,13 +395,23 @@ CURRENT SESSION STATUS:
                 return media_info
         
         return None
-    
     def format_agent_response(self, response_data: Dict, user_message: str) -> str:
         """Format the final agent response based on all the context."""
         
-        # Start with objection handling if needed
+        # Handle objections first
         if response_data.get("objection_response"):
             return response_data["objection_response"]
+        
+        # Handle demo responses
+        if response_data.get("demo_response"):
+            base_response = response_data["demo_response"]
+            if response_data.get("follow_up"):
+                base_response += f"\n\n{response_data['follow_up']}"
+            return base_response
+        
+        # Handle meeting booking
+        if response_data.get("meeting_response"):
+            return response_data["meeting_response"]
         
         # Handle product questions
         if response_data.get("knowledge_response"):
