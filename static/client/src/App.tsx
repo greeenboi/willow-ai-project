@@ -285,35 +285,8 @@ function App() {
         await playPromise;
       }
     } catch (autoplayError) {
-      // If autoplay fails, show a visual indicator that audio is available
-      console.log('Audio autoplay prevented. Audio will play after user interaction.', autoplayError);
-      
-      // Create a click handler to play audio when user interacts
-      const handleUserInteraction = async () => {
-        try {
-          const audio = new Audio(`data:audio/wav;base64,${base64Audio}`);
-          audio.volume = 0.7;
-          await audio.play();
-          
-          // Remove the event listener after playing
-          document.removeEventListener('click', handleUserInteraction);
-          document.removeEventListener('keydown', handleUserInteraction);
-        } catch (playError) {
-          console.error('Failed to play audio after user interaction:', playError);
-        }
-      };
-      
-      // Add event listeners for user interaction
-      document.addEventListener('click', handleUserInteraction, { once: true });
-      document.addEventListener('keydown', handleUserInteraction, { once: true });
-      
-      // Show a visual notification
-      const audioNotification: Message = {
-        text: '🔊 Audio response is ready. Click anywhere to play.',
-        sender: 'agent',
-        timestamp: new Date().toISOString(),
-      };
-      setMessages(prevMessages => [...prevMessages, audioNotification]);
+      // If autoplay fails, silently ignore - no click-to-play functionality
+      console.log('Audio autoplay prevented by browser policy. Audio playback skipped.', autoplayError);
     }
   };
 
