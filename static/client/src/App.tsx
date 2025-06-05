@@ -12,7 +12,6 @@ import { CalendarBooking } from './components/CalendarBooking';
 
 // Import demo assets
 import demoVideoUrl from './assets/demo_product_overview.mp4';
-import demoHtmlUrl from './assets/demo_product_overview.html?url';
 
 interface Message {
   text: string;
@@ -566,36 +565,13 @@ function App() {
 
     const { type, topic } = currentMedia;
 
-    if (type === 'demo' || type === 'features') {
-      // Check if we have an HTML demo file
-      if (type === 'demo' && topic === 'product_overview') {
-        return (
-          <div className="flex flex-col">
-            <iframe 
-              src={demoHtmlUrl}
-              className="w-full h-96 rounded-md border border-white/20"
-              title="Willow AI Product Demo"
-              sandbox="allow-scripts allow-same-origin"
-            />
-            <h3 className="text-center mt-2 font-medium text-white">Willow AI Product Demo</h3>
-          </div>
-        );
-      }
-      
-      // Fallback to video for other demo types
+    // Always show video for all media types (demo, features, pricing, testimonials)
+    if (type === 'demo' || type === 'pricing' || type === 'testimonials') {
       return (
         <div className="flex flex-col">
           <video src={demoVideoUrl} controls className="max-w-full rounded-md">
             <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
           </video>
-          <h3 className="text-center mt-2 font-medium text-white">{topic ? `${type}: ${topic}` : type}</h3>
-        </div>
-      );
-    } 
-    if (type === 'pricing' || type === 'testimonials') {
-      return (
-        <div className="flex flex-col">
-          <img src={`/static/media/${type}_${topic || 'general'}.jpg`} alt={`${type} information`} className="max-w-full rounded-md object-contain" />
           <h3 className="text-center mt-2 font-medium text-white">{topic ? `${type}: ${topic}` : type}</h3>
         </div>
       );
@@ -608,15 +584,10 @@ function App() {
   const renderInlineMedia = (media: Media) => {
     const { type, topic } = media;
 
-    if (type === 'demo' && topic === 'product_overview') {
+    // Always show video for all media types (demo, features, etc.)
+    if (type === 'demo' || type === 'pricing' || type === 'testimonials') {
       return (
         <div className="mt-3 rounded-lg overflow-hidden border border-white/20">
-          {/*<iframe */}
-          {/*  src={demoHtmlUrl}*/}
-          {/*  className="w-full h-80 border-0"*/}
-          {/*  title="Willow AI Product Demo"*/}
-          {/*  sandbox="allow-scripts allow-same-origin"*/}
-          {/*/>*/}
           <video
             src={demoVideoUrl}
             controls
@@ -625,34 +596,6 @@ function App() {
           >
             <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
           </video>
-        </div>
-      );
-    }
-
-    if (type === 'demo' || type === 'features') {
-      return (
-        // <div className="mt-3 rounded-lg overflow-hidden">
-        //   <video
-        //     src={demoVideoUrl}
-        //     controls
-        //     className="w-full rounded-lg"
-        //     poster="/static/media/video-placeholder.jpg"
-        //   >
-        //     <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
-        //   </video>
-        // </div>
-          <></>
-      );
-    }
-
-    if (type === 'pricing' || type === 'testimonials') {
-      return (
-        <div className="mt-3 rounded-lg overflow-hidden">
-          <img 
-            src={`/static/media/${type}_${topic || 'general'}.jpg`} 
-            alt={`${type} information`} 
-            className="w-full rounded-lg object-cover"
-          />
         </div>
       );
     }
@@ -1002,6 +945,10 @@ function App() {
                 leadInfo={leadInfo}
                 onBookingComplete={handleBookingComplete}
                 onClose={() => setShowCalendarModal(false)}
+                onSendMessage={(message: string) => {
+                  setInputMessage(message);
+                  setTimeout(() => sendMessage(), 100);
+                }}
               />
             </div>
           </div>
