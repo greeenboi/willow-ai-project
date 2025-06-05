@@ -28,6 +28,7 @@ import asyncio
 
 from database import DatabaseManager
 from knowledge_manager import KnowledgeManager
+from calendar_agent import CalendarBookingAgent
 
 # Load environment variables
 load_dotenv()
@@ -314,7 +315,36 @@ async def get_ai_response(conversation_state, user_input):
     """Get AI response using knowledge manager for intelligent conversation flow."""
     try:
         logger.info(f"Getting AI response for input: {user_input[:50]}...")
-          # Get contextual response from knowledge manager
+        
+        # Check if we should transition to calendar booking agent
+        if conversation_state.meeting_booking_mode:
+            logger.info("Already in meeting booking mode - using calendar agent")
+            calendar_agent = CalendarBookingAgent()
+            response = await calendar_agent.get_response(user_input, conversation_state.lead_info)
+            
+            # Check if booking session should end
+            if calendar_agent.should_end_booking_session(user_input):
+                conversation_state.meeting_booking_mode = False
+                logger.info("Calendar booking session ended")
+            
+            return response
+        
+        # Check for sentiment detection to transition to calendar booking
+        move_forward_detected = knowledge_manager.detect_move_forward_sentiment(
+            user_input, 
+            conversation_state.lead_info
+        )
+        
+        if move_forward_detected:
+            logger.info("Move forward sentiment detected - transitioning to calendar booking agent")
+            conversation_state.meeting_booking_mode = True
+            
+            # Initialize calendar agent and get first response
+            calendar_agent = CalendarBookingAgent()
+            transition_message = "Great! I can see you're ready to move forward. Let me help you schedule a meeting with our team to discuss how Willow AI can work for your specific needs. What times work best for you this week?"
+            return transition_message
+        
+        # Get contextual response from knowledge manager
         session_context = {
             "conversation_history": conversation_state.conversation_history,
             "current_stage": conversation_state.current_stage,
@@ -671,6 +701,7 @@ def text_to_speech(text):
     except Exception as e:
         logger.error(f"Error in text-to-speech conversion: {str(e)}")
         return None
+    # return None  # Placeholder for TTS function, currently not used
 
 # Routes and HTTP handlers
 @app.get("/")
