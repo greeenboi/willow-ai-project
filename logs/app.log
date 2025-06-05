@@ -856,3 +856,189 @@ Before I do ...
 2025-06-04 03:59:20,413 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3595, Requested 112. Please try again in 42m36.136s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
 
 2025-06-04 03:59:20,415 - main - INFO - Sent text response to session_4465b7c40562
+2025-06-04 12:15:06,786 - database - INFO - Knowledge base already populated
+2025-06-04 12:15:06,787 - database - INFO - Turso database initialized successfully
+2025-06-04 12:15:06,787 - main - INFO - Database manager and knowledge manager initialized
+2025-06-04 12:15:20,594 - main - INFO - Generated new session ID: session_0315065d5b1a
+2025-06-04 12:15:20,600 - main - INFO - Generated new session ID: session_e520f9b7c8d2
+2025-06-04 12:15:20,897 - main - INFO - Starting session: session_0315065d5b1a, restore: False
+2025-06-04 12:15:22,453 - database - INFO - Created session: session_0315065d5b1a
+2025-06-04 12:15:24,070 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 12:15:24,071 - main - INFO - Starting session: session_e520f9b7c8d2, restore: False
+2025-06-04 12:15:25,462 - database - INFO - Created session: session_e520f9b7c8d2
+2025-06-04 12:15:27,176 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-04 12:15:28,754 - main - INFO - TTS successful, generated 1740908 characters of base64 audio
+2025-06-04 12:15:28,756 - main - INFO - Session started for session_0315065d5b1a
+2025-06-04 12:15:28,798 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-04 12:15:28,803 - main - INFO - Session started for session_e520f9b7c8d2
+2025-06-04 12:16:06,875 - main - INFO - Processing text message from session_e520f9b7c8d2: Hi I am Suvan GS, I work At Salesforce as a Senior Architect
+2025-06-04 12:16:09,218 - main - INFO - Getting AI response for input: Hi I am Suvan GS, I work At Salesforce as a Senior...
+2025-06-04 12:16:09,224 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-04 12:16:10,934 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-04 12:16:11,834 - main - INFO - TTS successful, generated 716908 characters of base64 audio
+2025-06-04 12:16:11,835 - main - INFO - Sent text response to session_e520f9b7c8d2
+2025-06-04 12:16:18,050 - main - INFO - Processing text message from session_e520f9b7c8d2: I am a highly skilled professional who designs and oversees the implementation of Salesforce solutions to meet a company's business needs. I act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-04 12:16:19,682 - main - INFO - Getting AI response for input: I am a highly skilled professional who designs and...
+2025-06-04 12:16:20,990 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:16:22,842 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:16:22,843 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-04 12:16:22,844 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-04 12:16:24,522 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-04 12:16:25,589 - main - INFO - TTS successful, generated 1036908 characters of base64 audio
+2025-06-04 12:16:26,853 - database - INFO - Logged media interaction: features/security for session session_e520f9b7c8d2
+2025-06-04 12:16:26,854 - main - INFO - Sent text response to session_e520f9b7c8d2
+2025-06-04 12:16:40,912 - main - INFO - Processing text message from session_e520f9b7c8d2: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.
+2025-06-04 12:16:42,613 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-04 12:16:42,618 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 12:16:43,942 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:16:45,412 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:16:46,645 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:16:46,646 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-04 12:16:46,646 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 12:16:48,257 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 12:16:49,337 - main - INFO - TTS successful, generated 844908 characters of base64 audio
+2025-06-04 12:16:50,488 - database - INFO - Logged media interaction: features/core_features for session session_e520f9b7c8d2
+2025-06-04 12:16:50,489 - main - INFO - Sent text response to session_e520f9b7c8d2
+2025-06-04 12:16:58,189 - main - INFO - Processing text message from session_e520f9b7c8d2: Yes I would
+2025-06-04 12:16:59,637 - main - INFO - Getting AI response for input: Yes I would...
+2025-06-04 12:16:59,638 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 12:17:00,843 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:02,083 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:03,308 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:03,309 - main - INFO - Demo interest detected in user response - forcing demo display
+2025-06-04 12:17:03,309 - main - INFO - Demo triggered by user agreement
+2025-06-04 12:17:03,310 - main - INFO - Updated session state: agent_asked_demo = False
+2025-06-04 12:17:03,310 - main - INFO - Demo shown - resetting agent_asked_demo flag
+2025-06-04 12:17:03,311 - main - INFO - Knowledge manager response: Perfect! Here's a quick overview of how Willow AI works in action. This demo shows how Willow AI eng...
+2025-06-04 12:17:04,873 - main - INFO - Starting TTS for text: Perfect! Here's a quick overview of how Willow AI ...
+2025-06-04 12:17:04,992 - main - ERROR - TTS API request failed with status 429: {"error":{"message":"Rate limit reached for model `playai-tts` in organization `org_01jre6bejdf0stk1rryd8tdmg3` service tier `on_demand` on tokens per day (TPD): Limit 3600, Used 3394, Requested 299. Please try again in 36m55.393s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+2025-06-04 12:17:06,235 - database - INFO - Logged media interaction: demo/product_overview for session session_e520f9b7c8d2
+2025-06-04 12:17:06,236 - main - INFO - Sent text response to session_e520f9b7c8d2
+2025-06-04 12:17:51,765 - main - INFO - Processing text message from session_e520f9b7c8d2: Thats Perfect, A great fit for my team
+2025-06-04 12:17:53,668 - main - INFO - Getting AI response for input: Thats Perfect, A great fit for my team...
+2025-06-04 12:17:53,671 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-04 12:17:54,959 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:56,245 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:57,455 - database - INFO - Updated session: session_e520f9b7c8d2
+2025-06-04 12:17:57,456 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-04 12:17:58,984 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-04 12:17:59,994 - main - INFO - TTS successful, generated 908908 characters of base64 audio
+2025-06-04 12:17:59,996 - main - INFO - Sent text response to session_e520f9b7c8d2
+2025-06-05 05:31:13,229 - database - INFO - Knowledge base already populated
+2025-06-05 05:31:13,231 - database - INFO - Turso database initialized successfully
+2025-06-05 05:31:13,231 - main - INFO - Database manager and knowledge manager initialized
+2025-06-05 05:32:57,713 - main - INFO - Generated new session ID: session_37b868e6ebc2
+2025-06-05 05:32:57,720 - main - INFO - Generated new session ID: session_38e4bc430abc
+2025-06-05 05:32:57,844 - main - INFO - Starting session: session_37b868e6ebc2, restore: False
+2025-06-05 05:32:59,755 - database - INFO - Created session: session_37b868e6ebc2
+2025-06-05 05:33:01,595 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-05 05:33:01,599 - main - INFO - Starting session: session_38e4bc430abc, restore: False
+2025-06-05 05:33:03,143 - database - INFO - Created session: session_38e4bc430abc
+2025-06-05 05:33:04,997 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-05 05:33:06,515 - main - INFO - TTS successful, generated 1804908 characters of base64 audio
+2025-06-05 05:33:06,517 - main - INFO - Session started for session_37b868e6ebc2
+2025-06-05 05:33:07,413 - main - INFO - TTS successful, generated 1676908 characters of base64 audio
+2025-06-05 05:33:07,415 - main - INFO - Session started for session_38e4bc430abc
+2025-06-05 05:33:25,874 - main - INFO - Processing text message from session_38e4bc430abc: Hi I am Suvan GS, I work At Salesforce as a Senior Architect
+2025-06-05 05:33:27,765 - main - INFO - Getting AI response for input: Hi I am Suvan GS, I work At Salesforce as a Senior...
+2025-06-05 05:33:27,771 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-05 05:33:29,535 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-05 05:33:30,720 - main - INFO - TTS successful, generated 652908 characters of base64 audio
+2025-06-05 05:33:30,721 - main - INFO - Sent text response to session_38e4bc430abc
+2025-06-05 05:33:45,514 - main - INFO - Processing text message from session_38e4bc430abc: I am a highly skilled professional who designs and oversees the implementation of Salesforce solutions to meet a company's business needs. I act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-05 05:33:47,476 - main - INFO - Getting AI response for input: I am a highly skilled professional who designs and...
+2025-06-05 05:33:48,844 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:33:50,267 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:33:50,268 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-05 05:33:50,268 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-05 05:33:52,052 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-05 05:33:53,461 - main - INFO - TTS successful, generated 844908 characters of base64 audio
+2025-06-05 05:33:55,146 - database - INFO - Logged media interaction: features/security for session session_38e4bc430abc
+2025-06-05 05:33:55,146 - main - INFO - Sent text response to session_38e4bc430abc
+2025-06-05 05:34:14,817 - main - INFO - Processing text message from session_38e4bc430abc: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.
+2025-06-05 05:34:16,590 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-05 05:34:16,595 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-05 05:34:17,974 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:34:19,517 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:34:21,015 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:34:21,016 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-05 05:34:21,017 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-05 05:34:22,834 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-05 05:34:24,090 - main - INFO - TTS successful, generated 908908 characters of base64 audio
+2025-06-05 05:34:25,539 - database - INFO - Logged media interaction: features/core_features for session session_38e4bc430abc
+2025-06-05 05:34:25,539 - main - INFO - Sent text response to session_38e4bc430abc
+2025-06-05 05:37:07,215 - main - INFO - Processing text message from session_38e4bc430abc: Yea sure
+2025-06-05 05:37:09,483 - main - INFO - Getting AI response for input: Yea sure...
+2025-06-05 05:37:09,491 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-05 05:37:11,861 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:37:13,331 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:37:14,728 - database - INFO - Updated session: session_38e4bc430abc
+2025-06-05 05:37:14,729 - main - INFO - Demo interest detected in user response - forcing demo display
+2025-06-05 05:37:14,729 - main - INFO - Demo triggered by user agreement
+2025-06-05 05:37:14,730 - main - INFO - Updated session state: agent_asked_demo = False
+2025-06-05 05:37:14,731 - main - INFO - Demo shown - resetting agent_asked_demo flag
+2025-06-05 05:37:14,731 - main - INFO - Knowledge manager response: Perfect! Here's a quick overview of how Willow AI works in action. This demo shows how Willow AI eng...
+2025-06-05 05:37:16,581 - main - INFO - Starting TTS for text: Perfect! Here's a quick overview of how Willow AI ...
+2025-06-05 05:37:18,738 - main - INFO - TTS successful, generated 2444908 characters of base64 audio
+2025-06-05 05:37:20,112 - database - INFO - Logged media interaction: demo/product_overview for session session_38e4bc430abc
+2025-06-05 05:37:20,113 - main - INFO - Sent text response to session_38e4bc430abc
+2025-06-05 05:38:28,086 - main - INFO - Generated new session ID: session_a32ffa622232
+2025-06-05 05:38:28,100 - main - INFO - Starting session: session_a32ffa622232, restore: False
+2025-06-05 05:38:30,422 - database - INFO - Created session: session_a32ffa622232
+2025-06-05 05:38:32,294 - main - INFO - Starting TTS for text: Hi there! I'm Jane, an AI Sales Development Repres...
+2025-06-05 05:38:33,818 - main - INFO - TTS successful, generated 1676908 characters of base64 audio
+2025-06-05 05:38:33,819 - main - INFO - Session started for session_a32ffa622232
+2025-06-05 05:38:49,346 - main - INFO - Processing text message from session_a32ffa622232: Hi I am Suvan GS, I work At Salesforce as a Senior Architect
+2025-06-05 05:38:51,964 - main - INFO - Getting AI response for input: Hi I am Suvan GS, I work At Salesforce as a Senior...
+2025-06-05 05:38:51,967 - main - INFO - Knowledge manager response: I'd love to learn more about your current setup. Can you tell me about your company and what you do?...
+2025-06-05 05:38:53,841 - main - INFO - Starting TTS for text: I'd love to learn more about your current setup. C...
+2025-06-05 05:38:55,870 - main - INFO - TTS successful, generated 716908 characters of base64 audio
+2025-06-05 05:38:55,871 - main - INFO - Sent text response to session_a32ffa622232
+2025-06-05 05:39:02,930 - main - INFO - Processing text message from session_a32ffa622232: I am a highly skilled professional who designs and oversees the implementation of Salesforce solutions to meet a company's business needs. I act as a bridge between business strategy and technical execution, ensuring that Salesforce is configured, customized, and integrated effectively with other systems. This involves everything from defining data models and automation to ensuring scalability, security, and compliance, ultimately driving business value and efficient use of the platform.
+2025-06-05 05:39:05,023 - main - INFO - Getting AI response for input: I am a highly skilled professional who designs and...
+2025-06-05 05:39:06,483 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:39:07,923 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:39:07,924 - main - INFO - Media suggested: {'type': 'features', 'topic': 'security'}
+2025-06-05 05:39:07,925 - main - INFO - Knowledge manager response: Do you have a budget allocated for AI or sales automation tools this quarter?...
+2025-06-05 05:39:09,607 - main - INFO - Starting TTS for text: Do you have a budget allocated for AI or sales aut...
+2025-06-05 05:39:11,729 - main - INFO - TTS successful, generated 844908 characters of base64 audio
+2025-06-05 05:39:13,119 - database - INFO - Logged media interaction: features/security for session session_a32ffa622232
+2025-06-05 05:39:13,120 - main - INFO - Sent text response to session_a32ffa622232
+2025-06-05 05:39:18,787 - main - INFO - Processing text message from session_a32ffa622232: Yes, we have a budget of $75,000 allocated for AI and sales automation tools this quarter. This is primarily earmarked for a new lead scoring AI platform and an upgrade to our CRM's sales sequence automation features.
+2025-06-05 05:39:21,106 - main - INFO - Getting AI response for input: Yes, we have a budget of $75,000 allocated for AI ...
+2025-06-05 05:39:21,110 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-05 05:39:22,550 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:39:23,903 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:39:25,302 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:39:25,303 - main - INFO - Media suggested: {'type': 'features', 'topic': 'core_features'}
+2025-06-05 05:39:25,303 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-05 05:39:27,085 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-05 05:39:28,311 - main - INFO - TTS successful, generated 908908 characters of base64 audio
+2025-06-05 05:39:30,058 - database - INFO - Logged media interaction: features/core_features for session session_a32ffa622232
+2025-06-05 05:39:30,059 - main - INFO - Sent text response to session_a32ffa622232
+2025-06-05 05:39:55,227 - main - INFO - Processing text message from session_a32ffa622232: Yea show me a demo
+2025-06-05 05:39:57,083 - main - INFO - Getting AI response for input: Yea show me a demo...
+2025-06-05 05:39:57,084 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-05 05:39:58,630 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:00,027 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:01,418 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:01,419 - main - INFO - Demo interest detected in user response - forcing demo display
+2025-06-05 05:40:01,419 - main - INFO - Demo triggered by user agreement
+2025-06-05 05:40:01,420 - main - INFO - Updated session state: agent_asked_demo = False
+2025-06-05 05:40:01,421 - main - INFO - Demo shown - resetting agent_asked_demo flag
+2025-06-05 05:40:01,421 - main - INFO - Knowledge manager response: Perfect! Here's a quick overview of how Willow AI works in action. This demo shows how Willow AI eng...
+2025-06-05 05:40:03,222 - main - INFO - Starting TTS for text: Perfect! Here's a quick overview of how Willow AI ...
+2025-06-05 05:40:05,108 - main - INFO - TTS successful, generated 2764908 characters of base64 audio
+2025-06-05 05:40:06,472 - database - INFO - Logged media interaction: demo/product_overview for session session_a32ffa622232
+2025-06-05 05:40:06,473 - main - INFO - Sent text response to session_a32ffa622232
+2025-06-05 05:40:37,142 - main - INFO - Processing text message from session_a32ffa622232: Yes this is a goof fit!
+2025-06-05 05:40:38,973 - main - INFO - Getting AI response for input: Yes this is a goof fit!...
+2025-06-05 05:40:38,976 - main - INFO - Agent asking for demo - setting flag to True
+2025-06-05 05:40:40,393 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:41,702 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:43,125 - database - INFO - Updated session: session_a32ffa622232
+2025-06-05 05:40:43,126 - main - INFO - Knowledge manager response: It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of h...
+2025-06-05 05:40:44,937 - main - INFO - Starting TTS for text: It sounds like Willow AI could be a great fit for ...
+2025-06-05 05:40:47,070 - main - INFO - TTS successful, generated 908908 characters of base64 audio
+2025-06-05 05:40:47,071 - main - INFO - Sent text response to session_a32ffa622232
