@@ -611,28 +611,37 @@ function App() {
     if (type === 'demo' && topic === 'product_overview') {
       return (
         <div className="mt-3 rounded-lg overflow-hidden border border-white/20">
-          <iframe 
-            src={demoHtmlUrl}
-            className="w-full h-80 border-0"
-            title="Willow AI Product Demo"
-            sandbox="allow-scripts allow-same-origin"
-          />
-        </div>
-      );
-    }
-
-    if (type === 'demo' || type === 'features') {
-      return (
-        <div className="mt-3 rounded-lg overflow-hidden">
-          <video 
-            src={demoVideoUrl} 
-            controls 
+          {/*<iframe */}
+          {/*  src={demoHtmlUrl}*/}
+          {/*  className="w-full h-80 border-0"*/}
+          {/*  title="Willow AI Product Demo"*/}
+          {/*  sandbox="allow-scripts allow-same-origin"*/}
+          {/*/>*/}
+          <video
+            src={demoVideoUrl}
+            controls
             className="w-full rounded-lg"
             poster="/static/media/video-placeholder.jpg"
           >
             <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
           </video>
         </div>
+      );
+    }
+
+    if (type === 'demo' || type === 'features') {
+      return (
+        // <div className="mt-3 rounded-lg overflow-hidden">
+        //   <video
+        //     src={demoVideoUrl}
+        //     controls
+        //     className="w-full rounded-lg"
+        //     poster="/static/media/video-placeholder.jpg"
+        //   >
+        //     <track kind="captions" src={`/static/media/captions_${type}_${topic || 'general'}.vtt`} label="English" />
+        //   </video>
+        // </div>
+          <></>
       );
     }
 
