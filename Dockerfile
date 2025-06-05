@@ -21,6 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY database.py .
 COPY knowledge_manager.py .
+COPY calendar_agent.py .
 
 # Copy .env if it exists (optional for local builds, not needed in production)
 COPY .env* ./
