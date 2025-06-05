@@ -207,12 +207,11 @@ class KnowledgeManager:
                 return match.group(0)
 
         # Budget range indicators
-        budget_ranges = {
-            "under 10k": ["small budget", "tight budget", "limited budget", "startup budget"],
+        budget_ranges = {            "under 10k": ["small budget", "tight budget", "limited budget", "startup budget"],
             "10k-50k": ["mid-range", "moderate budget", "reasonable budget"],
             "50k+": ["enterprise budget", "significant budget", "large budget", "substantial investment"]
         }
-
+        
         text_lower = text.lower()
         for range_name, indicators in budget_ranges.items():
             for indicator in indicators:
@@ -228,7 +227,17 @@ class KnowledgeManager:
         demo_shown = lead_info.get("demo_shown", False)
         completion = self.calculate_completion_percentage(lead_info)
 
-        # Check for objections first
+        # PRIORITY 1: Check for move forward sentiment FIRST (before everything else)
+        if self.detect_move_forward_sentiment(user_message, lead_info):
+            return {
+                "meeting_offer": "That's fantastic! I can see you're excited about what Willow AI can do for your team. Let me connect you with our account executive who can walk you through a customized implementation plan. Would you prefer to book a meeting directly using our calendar system, or would you like me to help schedule it for you?",
+                "persona": persona,
+                "intent": "move_forward_detected",
+                "updated_lead_info": lead_info,
+                "start_meeting_booking": True
+            }
+
+        # Check for objections
         objection_type = self.detect_objection(user_message)
         if objection_type and objection_type in self.objection_responses:
             return {
@@ -242,7 +251,7 @@ class KnowledgeManager:
         demo_interest = self.detect_demo_interest(user_message)
         agent_asked_demo = session_context.get("agent_asked_demo", False)
 
-        # Check if we should offer a meeting first (if demo has been shown)
+        # PRIORITY 2: Check if we should offer a meeting (if demo has been shown)
         if demo_shown and self.should_offer_meeting(user_message, lead_info):
             return {
                 "meeting_offer": "Sounds like Willow AI could be a great fit for your team. I'd love to set up a quick demo with our sales expert to walk you through how companies like yours are using it.\n\nYou can book a meeting directly using our calendar system at {cal_link} or I can help you schedule it. Would you prefer to book it yourself or would you like me to guide you through the process?",
@@ -433,8 +442,7 @@ CURRENT SESSION STATUS:
         """Calculate what percentage of lead qualification is complete."""
         required_fields = ["company_name", "domain", "problem", "budget"]
         completed = sum(1 for field in required_fields if lead_info.get(field))
-        return int((completed / len(required_fields)) * 100)
-
+        return int((completed / len(required_fields)) * 100)    
     def should_offer_demo(self, user_message: str, session_context: Dict) -> bool:
         """Determine if the agent should offer to show a demo based on user interest."""
         text_lower = user_message.lower()
@@ -442,6 +450,12 @@ CURRENT SESSION STATUS:
         # Don't offer demo if we already asked for one recently
         agent_asked_demo = session_context.get("agent_asked_demo", False)
         if agent_asked_demo:
+            return False
+        
+        # Don't offer demo if it was already shown
+        lead_info = session_context.get("lead_info", {})
+        demo_shown = lead_info.get("demo_shown", False)
+        if demo_shown:
             return False
 
         # Keywords that indicate demo interest
@@ -451,6 +465,7 @@ CURRENT SESSION STATUS:
             "can you show", "i'd like to see", "want to see"
         ]
 
+        # Only offer demo if user explicitly asks for it or shows specific interest
         return any(indicator in text_lower for indicator in demo_interest_indicators)
 
     def should_offer_meeting(self, user_message: str, lead_info: Dict) -> bool:
@@ -640,9 +655,7 @@ CURRENT SESSION STATUS:
             if len(response_data["next_questions"]) == 1:
                 return response_data["next_questions"][0]
             else:
-                return f"{response_data['next_questions'][0]} Also, {response_data['next_questions'][1].lower()}"
-
-        # Default responses based on completion and demo status
+                return f"{response_data['next_questions'][0]} Also, {response_data['next_questions'][1].lower()}"        # Default responses based on completion and demo status
         lead_info = response_data.get("updated_lead_info", {})
         completion = self.calculate_completion_percentage(lead_info)
         demo_shown = lead_info.get("demo_shown", False)
@@ -651,8 +664,59 @@ CURRENT SESSION STATUS:
             # If demo has been shown, push for meeting regardless of completion
             return "Based on what you've shared, I think Willow AI could be a great fit for your team. Would you like to schedule a quick call with our account executive to discuss how we can implement this for your specific needs?"
         elif completion >= 75:
-            return "It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of how it works?"
+            # Only offer demo if it hasn't been shown yet
+            if not demo_shown:
+                return "It sounds like Willow AI could be a great fit for your team! Would you like to see a quick demo of how it works?"
+            else:
+                return "Based on what you've shared, I think Willow AI could be a great fit for your team. Would you like to schedule a quick call with our account executive to discuss how we can implement this for your specific needs?"
         elif completion >= 50:
             return "Thanks for sharing that information. Let me ask you one more thing to better understand your needs."
         else:
             return "I'd love to learn more about your current setup. Can you tell me about your company and what you do?"
+
+    def detect_move_forward_sentiment(self, user_message: str, lead_info: Dict) -> bool:
+        """Detect if the user wants to move forward with booking a meeting."""
+        text_lower = user_message.lower()
+        
+        # Strong positive indicators for moving forward
+        move_forward_keywords = [
+            "yes", "sure", "okay", "alright", "sounds good", "let's do it",
+            "good fit", "great fit", "perfect fit", "exactly what we need",
+            "this could work", "this would work", "let's proceed", 
+            "next step", "move forward", "schedule", "book", "meeting",
+            "when can we start", "how do we proceed", "what's next",
+            "sign me up", "i'm interested", "very interested",
+            "looks good", "sounds perfect", "i like it", "impressive",
+            "this is helpful", "exactly right", "perfect solution",
+            "let's talk", "call me", "schedule a call", "book a demo",
+            # Added more specific phrases to catch user's exact words
+            "seems like a great fit", "seems like a good fit", "looks like a great fit",
+            "looks like a good fit", "this seems great", "this looks great",
+            "this is great", "this is perfect", "love this", "love it",
+            "want this", "need this", "this works", "this will work"
+        ]
+        
+        # Keywords that indicate they want more info (not ready to move forward)
+        more_info_keywords = [
+            "but", "however", "what about", "can you tell me", "how does",
+            "what if", "do you have", "is there", "can it", "does it",
+            "pricing", "cost", "price", "budget", "features", "integration",
+            "security", "support", "training", "implementation", "timeline"
+        ]
+        
+        # Check for positive sentiment
+        has_positive_sentiment = any(keyword in text_lower for keyword in move_forward_keywords)
+        
+        # Check if they're asking for more information
+        wants_more_info = any(keyword in text_lower for keyword in more_info_keywords)
+        
+        # More aggressive detection - if they show positive sentiment and demo was shown OR they're well qualified
+        completion = self.calculate_completion_percentage(lead_info)
+        demo_shown = lead_info.get("demo_shown", False)
+        
+        # Lower the threshold - move forward if they show positive sentiment and either:
+        # 1. Demo was shown, OR
+        # 2. They're well qualified (>70% complete)
+        return (has_positive_sentiment and 
+                not wants_more_info and 
+                (demo_shown or completion > 70))
