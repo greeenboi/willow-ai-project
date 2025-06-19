@@ -38,5 +38,5 @@ tomli==2.2.1
 typer==0.16.0
 typing-inspection==0.4.1
 typing_extensions==4.14.0
-urllib3==2.4.0
+urllib3==2.5.0
 uvicorn==0.34.3
